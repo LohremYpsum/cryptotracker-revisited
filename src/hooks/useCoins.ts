@@ -1,12 +1,13 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react'
 
-interface FetchCoins {
+export interface FetchCoins {
     id: string;
     name: string; 
     symbol: string;
     current_price: number;
-    ath: number;  
+    ath: number; 
+    image: string; 
  }
 
 const useCoins = () => {
@@ -15,7 +16,7 @@ const useCoins = () => {
     const [error, setError] = useState(null);
   
     // States and Actions
-    const initResults = 15;
+    const initResults = 12;
     const initPage = 1;
     const initCurrency = 'eur';
     const [count, setCount] = useState(initResults);

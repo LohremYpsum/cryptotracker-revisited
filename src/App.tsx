@@ -7,7 +7,7 @@ function App() {
     <Box>
       <NavBar />
 
-      <Container maxW={1600}>
+      <Container maxW={1200}>
         <TableOverview />
       </Container>
       
