@@ -1,23 +1,19 @@
 import {Box, Flex, Spacer, Text } from '@chakra-ui/react'
-import React from 'react'
 import DarkModeSwitch from './DarkModeSwitch'
+import SearchBar from './SearchBar'
 
 const NavBar = () => {
   return (
     <Flex>
-    
     <Text h={10}>Logo</Text>
-    
-    <Spacer />
-    
-    <Box w='120px' h='10' bg='red.500'>
-    <Text>Searchbar</Text>
+        <Spacer />
+    <Box w='150px' h='10'>
+       <SearchBar />
     </Box>
-    <Spacer />
+        <Spacer />
     <Box paddingTop={1} paddingRight={2}>
-    <DarkModeSwitch />
+        <DarkModeSwitch />
     </Box>
-    
   </Flex>
   )
 }

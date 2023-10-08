@@ -1,5 +1,4 @@
 import { Switch, useColorMode } from '@chakra-ui/react';
-import React from 'react'
 
 interface CustomColorModeContextType {
     colorMode: 'light' | 'dark';
