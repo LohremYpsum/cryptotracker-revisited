@@ -9,6 +9,7 @@ export interface FetchCoins {
     ath: number; 
     image: string; 
     market_cap: number;
+    circulating_supply: number;
  }
 
 const useCoins = () => {

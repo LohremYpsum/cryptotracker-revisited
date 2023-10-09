@@ -33,7 +33,7 @@ function App() {
           <BarchartAthChange />
         </Box>
         <Box w='600px' h='40px' paddingTop={25}>
-          <PiechartTradeVolume />
+          <PiechartTradeVolume cryptos={coinsData} chartTitle={''}/>
         </Box>
       </Stack>
 
