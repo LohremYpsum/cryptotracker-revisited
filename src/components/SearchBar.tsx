@@ -1,12 +1,13 @@
-import { Stack, InputGroup, InputLeftElement, Input, Text } from '@chakra-ui/react'
-import React from 'react'
+import { Stack, InputGroup, InputLeftElement, Input, Icon } from '@chakra-ui/react'
+import { CiSearch } from "react-icons/ci";
+
 
 const SearchBar = () => {
   return (
     <Stack spacing={12}>
     <InputGroup>
         <InputLeftElement pointerEvents='none'>
-        <Text>Icon</Text>
+        <Icon as={CiSearch} />
         </InputLeftElement>
         <Input type='text' placeholder='Seach Coin' />
     </InputGroup>
