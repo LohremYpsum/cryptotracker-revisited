@@ -1,11 +1,12 @@
-import {Box, Flex, Spacer, Text } from '@chakra-ui/react'
+import {Box, Flex, Spacer, Image } from '@chakra-ui/react'
 import DarkModeSwitch from './DarkModeSwitch'
+import navLogo from '../../assets/NavLogo.webp';
 import SearchBar from './SearchBar'
 
 const NavBar = () => {
   return (
-    <Flex>
-    <Text h={10}>Logo</Text>
+    <Flex paddingTop={3}>
+      <Image src={navLogo} boxSize='60px' marginLeft={2} borderRadius={8} />
         <Spacer />
     <Box w='150px' h='10'>
        <SearchBar />

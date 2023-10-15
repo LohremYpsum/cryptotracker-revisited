@@ -4,20 +4,18 @@ import Chart from 'chart.js/auto';
 
 //utils
 import { initialChartData } from '../../utils/chartData';
+import { FetchCoins } from '../../hooks/useCoins';
 
-interface Crypto {
-    symbol: string;
-    circulating_supply: number;
-  }
-  interface Props {
-    cryptos: Crypto[];
+interface Props {
+    cryptos: FetchCoins[];
     chartTitle: string;
-  }
+}
 
-const PiechartTradeVolume = ({chartTitle,cryptos}: Props) => {
+const PiechartTradeVolume = ({chartTitle, cryptos}: Props) => {
+    
     const chartRef = useRef<HTMLCanvasElement | null>(null);
 
-    const { currencySymbols, circSupArray, colorArray } = initialChartData;
+    const { currencySymbols, tradeVolArray, colorArray } = initialChartData;
 
     useEffect(() => {
         const initializeChart = () => {
@@ -30,7 +28,7 @@ const PiechartTradeVolume = ({chartTitle,cryptos}: Props) => {
                   labels: currencySymbols,
                   datasets: [
                     {
-                      data: circSupArray,
+                      data: tradeVolArray,
                       backgroundColor: colorArray,
                       hoverBackgroundColor: colorArray,
                     },
@@ -48,7 +46,7 @@ const PiechartTradeVolume = ({chartTitle,cryptos}: Props) => {
           if (Array.isArray(cryptos) && cryptos.length > 0) {
             cryptos.forEach((coin, index) => {
               currencySymbols.push(coin.symbol);
-              circSupArray.push(coin.circulating_supply);
+              tradeVolArray.push(coin.total_volume);
               if (index === 14) throw new Error();
             });
     

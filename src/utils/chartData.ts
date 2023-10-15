@@ -1,14 +1,18 @@
 export type ChartData = {
-    currencySymbols: string[];
     marketCap: number[];
     circSupArray: number[];
+    athChangeArray: number[];
+    tradeVolArray: number[];
+    currencySymbols: string[];
     colorArray: string[];
   };
 
   export const initialChartData: ChartData = {
-    currencySymbols: [],
     marketCap: [],
     circSupArray: [],
+    tradeVolArray: [],
+    athChangeArray: [],
+    currencySymbols: [],
     colorArray: [
       '#f4a261',
       '#264653',

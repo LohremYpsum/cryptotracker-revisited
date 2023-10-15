@@ -2,20 +2,21 @@ import { useEffect, useRef } from 'react';
 import { Card, CardBody, Text } from '@chakra-ui/react'
 import Chart from 'chart.js/auto';
 
-//utils
+// utils
 import { initialChartData } from '../../utils/chartData';
 import { FetchCoins } from '../../hooks/useCoins'
 
+
 interface Props {
-    cryptos: FetchCoins[];
-    chartTitle: string;
+  cryptos: FetchCoins[];
+  chartTitle: string; 
 }
 
-const BarchartAthChange = ({chartTitle, cryptos}: Props) => {
-  
+const PiechartCirculatingSupply = ({chartTitle, cryptos}: Props) => {
+
   const chartRef = useRef<HTMLCanvasElement | null>(null);
 
-  const { currencySymbols, athChangeArray, colorArray } = initialChartData;
+  const {currencySymbols, circSupArray, colorArray } = initialChartData;
 
   useEffect(() => {
     const initializeChart = () => {
@@ -23,12 +24,12 @@ const BarchartAthChange = ({chartTitle, cryptos}: Props) => {
         const ctx = chartRef.current.getContext('2d');
         if (ctx) {
           new Chart(ctx, {
-            type: 'bar',
+            type: 'doughnut',
             data: {
               labels: currencySymbols,
               datasets: [
                 {
-                  data: athChangeArray,
+                  data: circSupArray,
                   backgroundColor: colorArray,
                   hoverBackgroundColor: colorArray,
                 },
@@ -45,8 +46,8 @@ const BarchartAthChange = ({chartTitle, cryptos}: Props) => {
     try {
       if (Array.isArray(cryptos) && cryptos.length > 0) {
         cryptos.forEach((coin, index) => {
-          //athChangeArray.push(coin.symbol);
-          athChangeArray.push(coin.ath_change_percentage);
+          currencySymbols.push(coin.symbol);
+          circSupArray.push(coin.circulating_supply);
           if (index === 14) throw new Error();
         });
 
@@ -58,16 +59,16 @@ const BarchartAthChange = ({chartTitle, cryptos}: Props) => {
       console.error(error.message);
     }
   }, [cryptos]);
+  
 
-
-    return (
+  return (
     <Card>
     <CardBody>
-    <Text>{chartTitle}</Text>
+      <Text>{chartTitle}</Text>
       <canvas ref={chartRef} width={50} height={50}></canvas>
     </CardBody>
   </Card>
   )
 }
 
-export default BarchartAthChange
+export default PiechartCirculatingSupply

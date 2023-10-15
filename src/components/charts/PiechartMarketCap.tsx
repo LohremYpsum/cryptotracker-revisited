@@ -4,19 +4,15 @@ import Chart from 'chart.js/auto';
 
 //utils
 import { initialChartData } from '../../utils/chartData';
+import { FetchCoins } from '../../hooks/useCoins';
 
-
-interface Crypto {
-  symbol: string;
-  market_cap: number;
-}
 interface Props {
-  cryptos: Crypto[];
+  cryptos: FetchCoins[];
   chartTitle: string;
 }
 
 const PiechartMarketCap = ({ chartTitle, cryptos}: Props) => {
-
+  
   const chartRef = useRef<HTMLCanvasElement | null>(null);
 
   const { currencySymbols, marketCap, colorArray } = initialChartData;
