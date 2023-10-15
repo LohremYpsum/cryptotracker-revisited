@@ -1,3 +1,8 @@
+# Cryptotracker revised
+
+An updated and cleaner Version of my previous CryptoTracker from last year.
+Used TechStack is in the Description below:
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
