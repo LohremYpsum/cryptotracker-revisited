@@ -52,7 +52,7 @@ const BarchartAthChange = ({chartTitle, cryptos}: Props) => {
 
         initializeChart();
       } else {
-        throw new Error('Invalid or empty cryptos array.');
+        throw new Error();
       }
     } catch (error: any) {
       console.error(error.message);
