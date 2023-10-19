@@ -1,4 +1,4 @@
-import { Table, TableCaption, Thead, Tr, Th, Tbody, Td, Image} from '@chakra-ui/react'
+import { Table, TableCaption, Thead, Tr, Th, Tbody, Td, Image, Button, Link} from '@chakra-ui/react'
 import { FetchCoins } from '../hooks/useCoins';
 
 interface MainTableProps {
@@ -7,6 +7,7 @@ interface MainTableProps {
   }
 
 const MainTable = ({coinsData, currency}: MainTableProps) => {
+
   return (
     <Table variant='striped' colorScheme='teal'>
     <TableCaption></TableCaption>
@@ -37,7 +38,11 @@ const MainTable = ({coinsData, currency}: MainTableProps) => {
         <Td isNumeric>
             {singleEntry.ath} {currency ? '€' : '$'}
         </Td>
-        <Td>1</Td>
+        <Td>
+          <Button>
+            <Link href={`toDo-coinDetails/${singleEntry.id}`} isExternal>Details</Link>
+          </Button>
+        </Td>
         </Tr>
     ))}
     
