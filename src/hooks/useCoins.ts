@@ -52,7 +52,7 @@ const useCoins = () => {
           });
 
           return () => controller.abort();
-      }, [count, page, currency, isLoaded]);
+      }, [count, page, currency]);
 
   return {coinsData, error, isLoaded, currency }
 }
