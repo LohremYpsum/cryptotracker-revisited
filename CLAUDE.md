@@ -60,10 +60,10 @@ The gate is those three commands: `npm run lint`, `npm run build` and `npm test`
 `--max-warnings 0` means every warning fails the lint. There is **no CI** — the gate only
 runs when somebody runs it.
 
-> **As of 2026-10-04: the gate is red, and unchanged from `master`.**
-> `npm run build` fails with 8 × `TS6133`, `npm run lint` reports 11 errors and 4 warnings.
-> That is pre-existing, not a consequence of the test setup. **Epic E-00 exists exactly for
-> this** and blocks every other epic (`specs/Roadmap/roadmap.md`).
+> **As of 2026-10-04 the gate is green on `master`** (commit `e864940`): lint clean, build
+> passing, 107 tests passing. E-00 fixed the red baseline that used to be recorded here.
+> Since there is no CI, that is a snapshot of one tree — re-run the three commands rather
+> than trusting this line.
 
 ## Project structure
 

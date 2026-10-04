@@ -77,10 +77,9 @@ npm test        # vitest run
 All three must be green. There is no CI, so this gate only runs when someone runs it —
 `verify-epic` is the thing that runs it in full.
 
-> **Baseline, as of 2026-10-04:** `npm run lint` reports 11 errors and 4 warnings, and
-> `npm run build` fails with 8 `TS6133` errors. This is pre-existing on `master`, not
-> caused by the test setup. **E-00 exists to fix exactly this** and gates every other
-> epic — until the gate can go green, no epic can be verified as done.
+> **Measured on `master` at commit `e864940` (2026-10-04):** `npm run lint` clean,
+> `npm run build` passing, `npm test` 107 passing. E-00 fixed the red baseline this note
+> used to record; there is no CI, so the gate is only true for the tree it last ran on.
 
 ## Testing this stack
 
