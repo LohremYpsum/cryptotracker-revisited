@@ -17,7 +17,9 @@ Check all four **before writing any code**. Each exists because proceeding witho
 
 1. **The epic file exists** and has both halves — requirements *and* granular tasks. If tasks are missing, stop and point at `write-spec`.
 2. **No open questions or open architecture decisions remain.** An epic whose `D-2` blocks `T4` cannot start at T4.
-3. **The epic's gate is satisfied.** Read its "Gate to start" header and roadmap §4. If E-02 requires E-01 complete, verify that before starting. **E-00 gates every epic** — while `npm run lint` and `npm run build` are red, no epic can reach a `PASS`, so an epic other than E-00 cannot start on a red gate.
+3. **The epic's gate is satisfied.** Read its "Gate to start" header and roadmap §4. If E-02 requires E-01 complete, verify that before starting.
+
+   **While `master` is red, record the baseline first** (`npm run lint`, `npm run build`) and say so in the plan. An epic other than E-00 may proceed on a red baseline, but it cannot reach `verify-epic PASS` until E-00 lands — the honest per-change standard until then is "no new errors", per `CLAUDE.md` §"PRs thematisch schneiden". Report that limit up front rather than discovering it at Step 5.
 4. **The working tree is clean**, or the user has said to proceed anyway. Mixing an epic implementation into unrelated uncommitted work makes the change unreviewable.
 
 If a precondition fails, report precisely which and stop. Do not offer to work around it.
@@ -30,17 +32,19 @@ Produce a short plan before acting: the task order you will follow, which existi
 
 If the spec contradicts the codebase, say so and stop. This happens, and it is information — often the spec is right and the code is wrong, which is the entire premise of E-00 through E-02.
 
-## Step 2 — Branch
-
-This repository has no CI and a single long-lived branch. Before the first edit:
-
-```bash
-git switch -c feat/<epic-id>-<slug>
-```
+## Step 2 — Decide the PR cut, then branch
 
 Never implement an epic directly on `master`. The `github-pull-requests` skill expects a feature branch and will refuse to open a PR from the target branch.
 
-Delivery is **one pull request per epic**. The RPL original offers a stack of dependent PRs; that machinery is not worth its overhead on a single-developer repository, and it is deliberately not ported. If an epic is genuinely too large for one PR, that is a signal the epic should have been split in `brainstorm`, so report it rather than stacking.
+**Decide the cut before the first edit, not at task six** — by then the commit history no longer allows it.
+
+- The epic resolves to **one concern** → one branch, one PR:
+  ```bash
+  git switch -c feat/<epic-id>-<slug>
+  ```
+- The epic carries **more than one concern** — different conventional-commit types, or a title that would need an "and" — → invoke **`pr-splitting`** first. It returns the cut, the order and the base branch per PR; `github-pull-requests` then opens each one in that order.
+
+An epic whose tasks refuse to group into at most 5 stacked PRs is too large. That is a finding about the epic, not a reason for a deeper stack — report it.
 
 ## Step 3 — Tests first, from the acceptance criteria
 
