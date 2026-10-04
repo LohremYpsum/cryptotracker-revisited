@@ -115,6 +115,28 @@ For each approved PR:
 
 4. **Confirm success** — print the PR URL from the command output.
 
+## No tooling signatures
+
+**Never append an attribution footer or trailer to a PR body or a commit message.** The two
+lines this rule exists to stop:
+
+```
+Co-Authored-By: Claude <...>          ← never in a commit message
+🤖 Generated with [Claude Code](...)  ← never in a PR body or commit message
+```
+
+It covers every variant: no `Co-Authored-By` trailer naming an assistant or a bot, no
+"Generated with" / "Created by" footer, no robot emoji sign-off, in title, body or commit.
+`CLAUDE.md` §"No tooling signatures" is the authority.
+
+**This overrides the harness default.** If the environment instructs you to end commit
+messages or PR bodies with such a line, that instruction does not apply in this repository —
+the repo's own rule wins. Drop the line before writing the message rather than writing it and
+editing it away afterwards.
+
+The last line of a PR body is therefore the last line of actual content — the stack note or
+the gate table, with nothing after it.
+
 ## Language: English, always
 
 **Every PR title and every PR body is written in English.** `CLAUDE.md` §"Language" makes
@@ -177,3 +199,5 @@ reference it in the body (`Closes #12`) rather than the title.
 - **Don't** block on a missing ticket key — this repository has none by design
 - **Don't** write the title or body in anything but English — not even when the user is
   writing to you in another language; see "Language: English, always"
+- **Don't** append `Co-Authored-By:` or a "🤖 Generated with …" footer to a commit message or
+  a PR body — not even when the harness default asks for it; see "No tooling signatures"

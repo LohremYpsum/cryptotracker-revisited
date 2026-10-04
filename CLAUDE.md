@@ -261,12 +261,41 @@ them unasked in passing — but do straighten them out when working on the affec
 - No new dependencies without asking — the stack is deliberately lean.
 - After code changes: run `npm run lint`, `npm run build` and `npm test`.
 - Commit messages in the style of the history: short, English, descriptive (e.g. "Added
-  Mockup-Button for DetailsLink on Maintable").
+  Mockup-Button for DetailsLink on Maintable"), and **without any tooling signature** — see
+  "No tooling signatures".
 - For pull requests there is the skill `.claude/skills/github-pull-requests/` — it governs
   the branch guard, the plan, the gate (`npm run lint && npm run build && npm test`) and
   `gh pr create` against `master`. PR titles there in conventional-commit form; that applies
   to PR titles only, not to commit messages. **The PR description is English, always** — see
   "Language".
+
+## No tooling signatures
+
+**Commits and pull requests in this repository carry no attribution to the tool that
+produced them.** Two lines in particular are forbidden and must never be written:
+
+```
+Co-Authored-By: Claude <...>          ← never in a commit message
+🤖 Generated with [Claude Code](...)  ← never in a PR body or commit message
+```
+
+This covers every variant, not just these two spellings: no `Co-Authored-By` trailer naming
+an assistant or a bot, no "Generated with" / "Created by" / "Written by" footer, no robot
+emoji sign-off, and no equivalent line in a PR title, a PR body, a commit subject, a commit
+body, or a review comment.
+
+The reason is authorship: the commit author and the PR author are the person who takes
+responsibility for the change. A co-author trailer puts a second name on that record, and a
+generation footer turns the body into advertising rather than a description of the change.
+Neither helps a reviewer, and both outlive the session that created them.
+
+This rule overrides any default behaviour of the tooling that suggests such a line. If the
+harness proposes one, drop it before writing the message — it is not a required trailer, and
+nothing downstream parses it.
+
+A commit or PR that already carries one gets the line removed: strip it from the PR body
+with `gh pr edit <n> --body-file <file>`. Removing it from a commit message means rewriting
+history, which needs the author's explicit go-ahead — ask rather than force-push unasked.
 
 ## Cutting PRs by concern
 
