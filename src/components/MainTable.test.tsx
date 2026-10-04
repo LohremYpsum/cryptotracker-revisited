@@ -60,3 +60,27 @@ describe('MainTable', () => {
     expect(detailsLink.closest('button')).toBeNull()
   })
 })
+
+describe('MainTable currency', () => {
+  it('renders the euro sign for eur', () => {
+    renderWithChakra(<MainTable coinsData={[coin({ current_price: 50000 })]} currency="eur" />)
+
+    expect(screen.getByText(/50000/)).toHaveTextContent('€')
+  })
+
+  it('renders the dollar sign for usd', () => {
+    renderWithChakra(<MainTable coinsData={[coin({ current_price: 50000 })]} currency="usd" />)
+
+    // `currency ? '€' : '$'` is always truthy for a non-empty string, so the
+    // dollar branch was unreachable and usd rendered as euro.
+    const priceCell = screen.getByText(/50000/)
+    expect(priceCell).toHaveTextContent('$')
+    expect(priceCell).not.toHaveTextContent('€')
+  })
+
+  it('falls back to the upper-case code for a currency with no symbol', () => {
+    renderWithChakra(<MainTable coinsData={[coin({ current_price: 50000 })]} currency="chf" />)
+
+    expect(screen.getByText(/50000/)).toHaveTextContent('CHF')
+  })
+})
