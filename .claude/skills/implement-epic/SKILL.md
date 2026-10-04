@@ -19,7 +19,7 @@ Check all four **before writing any code**. Each exists because proceeding witho
 2. **No open questions or open architecture decisions remain.** An epic whose `D-2` blocks `T4` cannot start at T4.
 3. **The epic's gate is satisfied.** Read its "Gate to start" header and roadmap §4. If E-02 requires E-01 complete, verify that before starting.
 
-   **While `master` is red, record the baseline first** (`npm run lint`, `npm run build`) and say so in the plan. An epic other than E-00 may proceed on a red baseline, but it cannot reach `verify-epic PASS` until E-00 lands — the honest per-change standard until then is "no new errors", per `CLAUDE.md` §"PRs thematisch schneiden". Report that limit up front rather than discovering it at Step 5.
+   **While `master` is red, record the baseline first** (`npm run lint`, `npm run build`) and say so in the plan. An epic other than E-00 may proceed on a red baseline, but it cannot reach `verify-epic PASS` until E-00 lands — the honest per-change standard until then is "no new errors", per `CLAUDE.md` §"Cutting PRs by concern". Report that limit up front rather than discovering it at Step 5.
 4. **The working tree is clean**, or the user has said to proceed anyway. Mixing an epic implementation into unrelated uncommitted work makes the change unreviewable.
 
 If a precondition fails, report precisely which and stop. Do not offer to work around it.
@@ -66,7 +66,7 @@ For each task, before implementing it:
 
 Work **one task at a time, in the spec's order.** Do not batch tasks; do not skip ahead because a later one looks easier.
 
-Match the codebase's patterns rather than importing new ones — `CLAUDE.md` is the reference, and its "Bekannte Baustellen" list names the patterns that must **not** be copied.
+Match the codebase's patterns rather than importing new ones — `CLAUDE.md` is the reference, and its "Known rough edges" list names the patterns that must **not** be copied.
 
 **Lightweight check per task** — not the full gate:
 

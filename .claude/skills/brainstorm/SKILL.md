@@ -18,7 +18,7 @@ An epic identifier: `E-03`, `e03`, `epic-3`, or an epic name matching a row in `
 1. `specs/Epics/*` — including the completed ones in `specs/Epics/done/`. Any epic **other than the one you were invoked for** is binding context: where it already decides something, it wins over everything below and over your own judgement.
 2. `specs/README.md` — the ID scheme, the traceability convention and the hard rules.
 3. `specs/Roadmap/roadmap.md` — the epic's row (§2), its detail paragraph (§3), its dependencies (§4), and any decision in §5 that blocks it.
-4. `CLAUDE.md` — the stack's conventions and the "Bekannte Baustellen" list the roadmap rows were derived from.
+4. `CLAUDE.md` — the stack's conventions and the "Known rough edges" list the roadmap rows were derived from.
 5. **Sibling epics** already written — match their structure and tone rather than inventing a format.
 6. The working tree, when a requirement touches existing code. A requirement that contradicts what is already built is worth flagging, not silently proposing.
 

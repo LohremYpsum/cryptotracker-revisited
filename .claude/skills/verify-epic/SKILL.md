@@ -95,7 +95,7 @@ State these as limits in the report rather than passing over them:
 
 Compare a small number of recorded facts against reality and report divergences:
 
-- **`CLAUDE.md`'s "Bekannte Baustellen" list** versus the code. An entry fixed by this epic
+- **`CLAUDE.md`'s "Known rough edges" list** versus the code. An entry fixed by this epic
   should be struck from that list — report it as a required follow-up edit. This skill does
   not make the edit.
 - **The roadmap's status column** for this epic versus what was just measured.

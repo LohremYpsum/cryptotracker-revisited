@@ -2,7 +2,7 @@
 
 Status date: 2026-10-04. Conventions: `specs/README.md`.
 
-This roadmap was derived from the defect list in `CLAUDE.md` ("Bekannte Baustellen") plus
+This roadmap was derived from the defect list in `CLAUDE.md` ("Known rough edges") plus
 the measured state of the quality gate. It is a **starting point**, not a committed plan —
 rows are expected to change before each epic is brainstormed.
 
@@ -25,7 +25,7 @@ rows are expected to change before each epic is brainstormed.
 | **E-04** | Coin search | M2 | Not started | E-01 | 7 |
 | **E-05** | Coin detail view | M2 | Not started | E-01 | 7 |
 
-"Source defects" are the numbered entries under **Bekannte Baustellen** in `CLAUDE.md`.
+"Source defects" are the numbered entries under **Known rough edges** in `CLAUDE.md`.
 
 ## 3. Epic rows in detail
 
