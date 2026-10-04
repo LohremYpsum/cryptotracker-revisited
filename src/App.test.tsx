@@ -396,3 +396,44 @@ describe('App routes', () => {
     await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument())
   })
 })
+
+describe('App overview after routing', () => {
+  it('AK-E05-5.4 — leaves search, pagination, currency and dark mode working on /', async () => {
+    // Chakra persists the colour mode; start from a known one so the toggle
+    // assertion below means something.
+    localStorage.clear()
+    document.documentElement.removeAttribute('data-theme')
+
+    const user = userEvent.setup()
+    const full = Array.from({ length: 10 }, (_, i) => coin({ id: `c${i}`, name: `Coin ${i}` }))
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: full })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Coin 0')).toBeInTheDocument())
+
+    // Search still filters client-side, without spending a request.
+    const search = screen.getByRole('textbox', { name: 'Search coin' })
+    await user.type(search, 'Coin 1')
+    await waitFor(() => expect(screen.queryByText('Coin 0')).not.toBeInTheDocument())
+    expect(screen.getByText('Coin 1')).toBeInTheDocument()
+    expect(get).toHaveBeenCalledTimes(1)
+    await user.clear(search)
+    await waitFor(() => expect(screen.getByText('Coin 0')).toBeInTheDocument())
+
+    // Pagination still asks the API for the next page.
+    await user.click(screen.getByRole('button', { name: 'Next' }))
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
+    expect(get.mock.calls[1][0]).toContain('&page=2')
+
+    // The currency switch still refetches in the chosen currency.
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Display currency' }), 'usd')
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(3))
+    expect(get.mock.calls[2][0]).toContain('vs_currency=usd')
+
+    // And the dark-mode switch still flips the colour mode.
+    const toggle = screen.getByRole('checkbox', { name: 'Toggle dark mode' })
+    expect(toggle).not.toBeChecked()
+    await user.click(toggle)
+    expect(toggle).toBeChecked()
+  })
+})
