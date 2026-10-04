@@ -15,4 +15,27 @@ module.exports = {
       { allowConstantExport: true },
     ],
   },
+  overrides: [
+    {
+      // Vitest runs with `globals: true`, so describe/it/expect are not imported.
+      // The test helpers in src/test/ are not components, so Fast Refresh does
+      // not apply to them either.
+      files: ['src/**/*.{test,spec}.{ts,tsx}', 'src/test/**/*.{ts,tsx}'],
+      env: { node: true },
+      globals: {
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        vi: 'readonly',
+        beforeAll: 'readonly',
+        beforeEach: 'readonly',
+        afterAll: 'readonly',
+        afterEach: 'readonly',
+      },
+      rules: {
+        'react-refresh/only-export-components': 'off',
+      },
+    },
+  ],
 }
