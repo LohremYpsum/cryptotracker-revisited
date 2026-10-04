@@ -1,117 +1,140 @@
 # CLAUDE.md
 
-Leitfaden für Claude Code in diesem Repository.
+Guidance for Claude Code in this repository.
 
-## Projekt
+## Language
 
-Crypto-Tracker SPA: lädt Marktdaten von der CoinGecko-API und stellt sie als Tabelle
-und als Charts (Doughnut/Bar) dar. UI-Sprache: Deutsch, Code/Bezeichner: Englisch.
+**English is the mandatory primary language of this repository.** This is not a
+preference and not a per-file choice — it applies to everything the repository
+contains or produces:
+
+| Artefact                                           | Language |
+| -------------------------------------------------- | -------- |
+| Code, identifiers, types, file names               | English  |
+| Comments and docstrings                            | English  |
+| Documentation (`CLAUDE.md`, `README.md`, `specs/`) | English  |
+| Skills in `.claude/skills/`                        | English  |
+| Commit messages                                    | English  |
+| **Pull request titles and descriptions**           | English  |
+| **User-facing UI strings and error messages**      | English  |
+
+Pull request descriptions are English **always** — no exception for a quick draft, an
+internal PR, or a body written in a hurry. A PR whose body is not English gets rewritten
+before review, not merged and fixed afterwards.
+
+The same rule governs new UI text: user-visible labels, headings and error messages are
+written in English. Where German strings still exist they are legacy and get corrected
+when the surrounding file is touched — see "Known rough edges".
+
+## Project
+
+Crypto tracker SPA: fetches market data from the CoinGecko API and presents it as a table
+and as charts (doughnut/bar).
 
 ## Tech Stack
 
-| Bereich     | Technologie                                             |
-| ----------- | ------------------------------------------------------- |
-| Build       | Vite 5, `@vitejs/plugin-react` (Babel)                  |
-| Sprache     | TypeScript 5 (`strict: true`), ESM                      |
-| UI          | React 18 (Function Components + Hooks)                  |
-| Komponenten | Chakra UI v2 + Emotion + framer-motion                  |
-| Icons       | react-icons                                             |
-| Charts      | Chart.js 4 (`chart.js/auto`, direkt auf Canvas)         |
-| HTTP        | axios                                                   |
-| Tests       | Vitest 2 + Testing Library + jsdom                      |
-| Lint        | ESLint 8 (`.eslintrc.cjs`, Flat Config ist NICHT aktiv) |
+| Area       | Technology                                            |
+| ---------- | ----------------------------------------------------- |
+| Build      | Vite 5, `@vitejs/plugin-react` (Babel)                |
+| Language   | TypeScript 5 (`strict: true`), ESM                    |
+| UI         | React 18 (function components + hooks)                |
+| Components | Chakra UI v2 + Emotion + framer-motion                |
+| Icons      | react-icons                                           |
+| Charts     | Chart.js 4 (`chart.js/auto`, directly on canvas)      |
+| HTTP       | axios                                                 |
+| Tests      | Vitest 2 + Testing Library + jsdom                    |
+| Lint       | ESLint 8 (`.eslintrc.cjs`, flat config is NOT active) |
 
-## Befehle
+## Commands
 
 ```bash
-npm run dev         # Dev-Server mit HMR
-npm run build       # tsc (Typecheck) && vite build
+npm run dev         # dev server with HMR
+npm run build       # tsc (typecheck) && vite build
 npm run lint        # eslint . --ext ts,tsx --max-warnings 0
 npm test            # vitest run
-npm run test:watch  # vitest im Watch-Modus
-npm run preview     # Build lokal servieren
+npm run test:watch  # vitest in watch mode
+npm run preview     # serve the build locally
 ```
 
-Das Gate sind die drei Befehle `npm run lint`, `npm run build` und `npm test`.
-`--max-warnings 0` heißt: jede Warnung bricht den Lint ab. Es gibt **keine CI** —
-das Gate läuft nur, wenn es jemand ausführt.
+The gate is those three commands: `npm run lint`, `npm run build` and `npm test`.
+`--max-warnings 0` means every warning fails the lint. There is **no CI** — the gate only
+runs when somebody runs it.
 
-> **Stand 2026-10-04: Das Gate ist rot, und zwar unverändert seit `master`.**
-> `npm run build` bricht mit 8 × `TS6133` ab, `npm run lint` meldet 11 Fehler und
-> 4 Warnungen. Das ist Altbestand, nicht Folge des Test-Setups. **Epic E-00 existiert
-> genau dafür** und blockiert alle anderen Epics (`specs/Roadmap/roadmap.md`).
+> **As of 2026-10-04: the gate is red, and unchanged from `master`.**
+> `npm run build` fails with 8 × `TS6133`, `npm run lint` reports 11 errors and 4 warnings.
+> That is pre-existing, not a consequence of the test setup. **Epic E-00 exists exactly for
+> this** and blocks every other epic (`specs/Roadmap/roadmap.md`).
 
-## Projektstruktur
+## Project structure
 
 ```
 src/
-  main.tsx                 # Entry: StrictMode > ChakraProvider > App
-  App.tsx                  # Layout, verteilt coinsData an die Charts
-  hooks/useCoins.ts        # Datenabruf + FetchCoins-Interface
-  utils/chartData.ts       # ChartData-Typ + Farbpalette
+  main.tsx                 # entry: StrictMode > ChakraProvider > App
+  App.tsx                  # layout, distributes coinsData to the charts
+  hooks/useCoins.ts        # data fetching + FetchCoins interface
+  utils/chartData.ts       # ChartData type + colour palette
   test/
-    setup.ts               # jest-dom, cleanup, matchMedia-Stub für Chakra
-    renderWithChakra.tsx   # render() im ChakraProvider — für Komponententests
+    setup.ts               # jest-dom, cleanup, matchMedia stub for Chakra
+    renderWithChakra.tsx   # render() inside ChakraProvider — for component tests
   components/
-    MainTable.tsx          # Präsentations-Tabelle (nur Props)
-    TableOverview.tsx      # Container für MainTable
-    charts/                # Ein Chart pro Datei, je eigener Canvas
+    MainTable.tsx          # presentational table (props only)
+    TableOverview.tsx      # container for MainTable
+    charts/                # one chart per file, each with its own canvas
     commons/               # NavBar, SearchBar, DarkModeSwitch, NavigationLogo
-specs/                     # Spec-Driven-Development, siehe specs/README.md
-  Roadmap/roadmap.md       # Epics, Milestones, Abhängigkeiten, offene Entscheidungen
-  Epics/                   # Ein Epic pro Datei, done/ für abgeschlossene
+specs/                     # spec-driven development, see specs/README.md
+  Roadmap/roadmap.md       # epics, milestones, dependencies, open decisions
+  Epics/                   # one epic per file, done/ for completed ones
 ```
 
-Tests liegen **neben** der getesteten Datei (`MainTable.tsx` → `MainTable.test.tsx`),
-nicht in einem separaten Baum. Nur die Helfer liegen in `src/test/`.
+Tests live **next to** the file they test (`MainTable.tsx` → `MainTable.test.tsx`), not in
+a separate tree. Only the helpers live in `src/test/`.
 
-Konventionen, die hier gelten und beibehalten werden sollen:
+Conventions that apply here and should be preserved:
 
-- Eine Komponente pro Datei, `PascalCase.tsx`, **Default Export** am Dateiende.
-- Hooks als `useXyz.ts` in `src/hooks/`, ebenfalls Default Export.
-- Props-Interface direkt über der Komponente (`interface Props` oder `interface XyzProps`).
-- Destrukturierung in der Signatur: `const Chart = ({ cryptos, chartTitle }: Props) => {`.
-- Geteilte Typen leben dort, wo sie entstehen (`FetchCoins` in `useCoins.ts`) und
-  werden von dort importiert — keine Duplikate anlegen.
+- One component per file, `PascalCase.tsx`, **default export** at the end of the file.
+- Hooks as `useXyz.ts` in `src/hooks/`, likewise default export.
+- Props interface directly above the component (`interface Props` or `interface XyzProps`).
+- Destructuring in the signature: `const Chart = ({ cryptos, chartTitle }: Props) => {`.
+- Shared types live where they originate (`FetchCoins` in `useCoins.ts`) and are imported
+  from there — do not create duplicates.
 
-## Best Practices für diesen Stack
+## Best practices for this stack
 
 ### TypeScript
 
-- `strict`, `noUnusedLocals`, `noUnusedParameters` sind an: keine toten Variablen,
-  keine ungenutzten Parameter stehen lassen — das bricht den Build.
-- **Kein `any`.** Im Code existiert noch `catch (error: any)`; neuer Code nutzt
-  `catch (error: unknown)` plus `axios.isAxiosError(error)` bzw. `instanceof Error`.
-- `isolatedModules` ist aktiv: Typen mit `import type { … }` importieren, wenn nur
-  der Typ gebraucht wird; `export type` statt `export` für reine Typ-Re-Exports.
-- Keine Type-Assertions als Workaround (`as CustomColorModeContextType` in
-  `DarkModeSwitch.tsx` ist genau das) — Chakra liefert bereits korrekte Typen.
-- API-Responses explizit typisieren: `axios.get<FetchCoins[]>(…)`.
+- `strict`, `noUnusedLocals` and `noUnusedParameters` are on: no dead variables and no
+  unused parameters left behind — that breaks the build.
+- **No `any`.** The code still contains `catch (error: any)`; new code uses
+  `catch (error: unknown)` plus `axios.isAxiosError(error)` or `instanceof Error`.
+- `isolatedModules` is active: import types with `import type { … }` when only the type is
+  needed; use `export type` instead of `export` for pure type re-exports.
+- No type assertions as a workaround (`as CustomColorModeContextType` in
+  `DarkModeSwitch.tsx` is exactly that) — Chakra already provides correct types.
+- Type API responses explicitly: `axios.get<FetchCoins[]>(…)`.
 
 ### React 18
 
-- Nur Function Components und Hooks. Rules of Hooks einhalten —
-  `eslint-plugin-react-hooks` ist aktiv.
-- **Dependency-Arrays vollständig und frei von Werten, die der Effekt selbst setzt.**
-  In `useCoins.ts` steht `isLoaded` im Array, obwohl der Effekt `setIsLoaded` aufruft:
-  das ist eine Schleife und darf nicht kopiert werden.
-- StrictMode mountet Effekte im Dev doppelt. Jeder Effekt braucht eine korrekte
-  Cleanup-Funktion (AbortController abbrechen, Chart zerstören, Listener entfernen).
-- Abgeleitete Werte mit `useMemo` berechnen, statt sie in einen State zu schreiben
-  oder in einem Effekt zusammenzubauen.
-- `key` beim Mapping ist eine stabile ID aus den Daten (`coin.id`), nie der Index.
-- State einmal besitzen und per Props nach unten reichen. Aktuell rufen `App.tsx`
-  **und** `TableOverview.tsx` jeweils `useCoins()` auf — das sind zwei unabhängige
-  States und zwei Netzwerk-Requests für dieselben Daten. Neue Konsumenten bekommen
-  die Daten als Props; wenn das zu tief wird, einen Context (oder TanStack Query)
-  einführen, statt den Hook erneut aufzurufen.
+- Function components and hooks only. Follow the Rules of Hooks —
+  `eslint-plugin-react-hooks` is active.
+- **Dependency arrays complete and free of values the effect sets itself.** In
+  `useCoins.ts`, `isLoaded` sits in the array although the effect calls `setIsLoaded`: that
+  is a loop and must not be copied.
+- StrictMode mounts effects twice in dev. Every effect needs a correct cleanup function
+  (abort the AbortController, destroy the chart, remove the listener).
+- Compute derived values with `useMemo` instead of writing them into state or assembling
+  them in an effect.
+- The `key` when mapping is a stable ID from the data (`coin.id`), never the index.
+- Own state once and pass it down via props. Right now `App.tsx` **and**
+  `TableOverview.tsx` each call `useCoins()` — that is two independent states and two
+  network requests for the same data. New consumers receive the data as props; if that gets
+  too deep, introduce a context (or TanStack Query) instead of calling the hook again.
 
 ### Chart.js 4
 
-- `chart.js/auto` registriert alle Controller automatisch — wenn Bundle-Größe zum
-  Thema wird, stattdessen gezielt `Chart.register(...)`.
-- **Jede Chart-Instanz muss zerstört werden**, sonst wirft Chart.js beim
-  Re-Render "Canvas is already in use". Muster:
+- `chart.js/auto` registers all controllers automatically — if bundle size becomes a
+  concern, use targeted `Chart.register(...)` instead.
+- **Every chart instance has to be destroyed**, otherwise Chart.js throws "Canvas is
+  already in use" on re-render. Pattern:
 
   ```ts
   useEffect(() => {
@@ -122,154 +145,149 @@ Konventionen, die hier gelten und beibehalten werden sollen:
   }, [labels, values])
   ```
 
-- Chart-Daten **immer frisch aus den Props ableiten** (`useMemo`), niemals in ein
-  Modul-Objekt pushen. `initialChartData` in `utils/chartData.ts` ist ein geteiltes,
-  mutables Singleton; die Charts pushen bei jedem Effekt-Lauf hinein, teilen sich
-  `currencySymbols` und sammeln dadurch Duplikate an. Bei Arbeit an den Charts:
-  nur `colorArray` als Konstante nutzen, die Datenarrays lokal aufbauen.
-- Obergrenzen über `.slice(0, 15)` ziehen, nicht über ein geworfenes `Error` als
-  Schleifenabbruch.
-- Canvas in einem Container mit definierter Höhe rendern und
-  `options.maintainAspectRatio: false` setzen, statt `width`/`height` am Element.
+- **Always derive chart data fresh from the props** (`useMemo`), never push into a module
+  object. `initialChartData` in `utils/chartData.ts` is a shared, mutable singleton; the
+  charts push into it on every effect run, share `currencySymbols` and accumulate
+  duplicates as a result. When working on the charts: use only `colorArray` as a constant
+  and build the data arrays locally.
+- Apply limits with `.slice(0, 15)`, not with a thrown `Error` as a loop break.
+- Render the canvas inside a container with a defined height and set
+  `options.maintainAspectRatio: false` instead of `width`/`height` on the element.
 
 ### Chakra UI v2
 
-- Layout und Spacing über Chakra-Props (`Stack`, `Flex`, `Box`, `spacing`, `padding`),
-  nicht über eigenes CSS. `App.css`/`index.css` bleiben minimal.
-- Responsive Werte als Array-Syntax: `direction={['column', 'row']}`,
-  `w={['100%', '600px']}`. Feste Pixelbreiten wie `w='600px'` brechen auf Mobile —
-  bei neuen Layouts responsive Werte verwenden.
-- Dark Mode läuft über `useColorMode`; farbabhängige Werte mit `useColorModeValue`
-  auflösen, keine hartkodierten Hex-Farben in Komponenten.
-- Theme-Anpassungen gehören in ein `extendTheme`-Objekt, das an `ChakraProvider`
-  übergeben wird — nicht als Inline-Overrides verstreuen.
+- Layout and spacing via Chakra props (`Stack`, `Flex`, `Box`, `spacing`, `padding`), not
+  via custom CSS. `App.css`/`index.css` stay minimal.
+- Responsive values in array syntax: `direction={['column', 'row']}`,
+  `w={['100%', '600px']}`. Fixed pixel widths like `w='600px'` break on mobile — use
+  responsive values for new layouts.
+- Dark mode runs through `useColorMode`; resolve colour-dependent values with
+  `useColorModeValue`, no hard-coded hex colours in components.
+- Theme customisations belong in an `extendTheme` object passed to `ChakraProvider` — do
+  not scatter them as inline overrides.
 
-### Datenabruf / axios
+### Data fetching / axios
 
-- Jeder Request bekommt einen `AbortController`, dessen `abort()` im Effekt-Cleanup
-  läuft; `CanceledError` wird abgefangen und ignoriert (so macht es `useCoins`).
-- Error-State als `string` (oder `Error`) halten und als Text rendern. Ein
-  Axios-Error-Objekt direkt in JSX (`{error && <Text>{error}</Text>}`) lässt React
-  abstürzen.
-- Die CoinGecko-Free-API hat ein enges Rate-Limit (~10–30 Requests/Minute).
-  Doppelte Hook-Aufrufe, fehlende Dedupe und Effekt-Schleifen führen direkt zu
-  HTTP 429 — ein weiterer Grund, die Daten nur einmal zu laden.
-- Base-URL und Query-Parameter nicht quer durch Komponenten streuen; sie gehören
-  in den Hook bzw. in eine axios-Instanz.
-- Falls je ein API-Key dazukommt: über `import.meta.env.VITE_*` einlesen, `.env`
-  bleibt ungetrackt. Alles mit `VITE_`-Präfix landet im Client-Bundle — dort
-  gehören keine Secrets hinein.
+- Every request gets an `AbortController` whose `abort()` runs in the effect cleanup;
+  `CanceledError` is caught and ignored (as `useCoins` does).
+- Keep the error state as a `string` (or `Error`) and render it as text. An axios error
+  object placed directly into JSX (`{error && <Text>{error}</Text>}`) crashes React.
+- The CoinGecko free API has a tight rate limit (~10–30 requests/minute). Duplicate hook
+  calls, missing dedupe and effect loops lead straight to HTTP 429 — another reason to load
+  the data only once.
+- Do not scatter the base URL and query parameters across components; they belong in the
+  hook or in an axios instance.
+- If an API key is ever added: read it via `import.meta.env.VITE_*`, `.env` stays untracked.
+  Everything with a `VITE_` prefix ends up in the client bundle — no secrets belong there.
 
 ### Vite
 
-- Assets über einen Import einbinden (`import navLogo from '../../assets/NavLogo.webp'`),
-  damit sie gehasht und mitgebündelt werden; `public/` nur für Dateien, die unter
-  festem Pfad liegen müssen.
-- Env-Zugriff ausschließlich über `import.meta.env`, nie `process.env`.
-- HMR-Fast-Refresh funktioniert nur, wenn eine Modul-Datei ausschließlich
-  Komponenten exportiert (`react-refresh/only-export-components`) — Hilfsfunktionen
-  und Konstanten in eigene Dateien legen.
+- Include assets via an import (`import navLogo from '../../assets/NavLogo.webp'`) so they
+  are hashed and bundled; `public/` only for files that must live at a fixed path.
+- Access env exclusively via `import.meta.env`, never `process.env`.
+- HMR fast refresh only works when a module file exports components exclusively
+  (`react-refresh/only-export-components`) — put helper functions and constants in their
+  own files.
 
 ### Tests (Vitest + Testing Library)
 
-- `globals: true` ist gesetzt — `describe`/`it`/`expect`/`vi` **nicht** importieren.
-  Für Testdateien gibt es ein ESLint-Override, das diese Globals kennt.
-- Chakra-Komponenten mit `renderWithChakra` aus `src/test/renderWithChakra.tsx`
-  rendern, nie mit dem nackten `render` — sonst fehlt der Theme-Context.
-- Hooks mit `renderHook` aus `@testing-library/react` testen.
-- **Chart.js lässt sich in jsdom nicht visuell prüfen.** jsdom hat keinen
-  2D-Canvas-Context, `getContext('2d')` liefert `null`. Prüfbar ist die Konfiguration,
-  die an Chart.js übergeben wird:
+- `globals: true` is set — do **not** import `describe`/`it`/`expect`/`vi`. There is an
+  ESLint override for test files that knows these globals.
+- Render Chakra components with `renderWithChakra` from `src/test/renderWithChakra.tsx`,
+  never with the bare `render` — otherwise the theme context is missing.
+- Test hooks with `renderHook` from `@testing-library/react`.
+- **Chart.js cannot be checked visually in jsdom.** jsdom has no 2D canvas context,
+  `getContext('2d')` returns `null`. What is checkable is the configuration handed to
+  Chart.js:
 
   ```ts
   vi.mock('chart.js/auto', () => ({ default: vi.fn(() => ({ destroy: vi.fn() })) }))
   ```
 
-  Danach auf die Konstruktor-Argumente assertieren — Labels, Datasets, Typ. Genau dort
-  sitzen die Defekte, nicht in den Pixeln.
-- Abfragen nach Rolle und sichtbarem Text (`getByRole`, `getByText`), nicht nach
-  CSS-Klassen oder Test-IDs. Chakra generiert Klassennamen, auf die man sich nicht
-  verlassen kann.
-- Keine Assertion, die nur „gerendert ohne Exception" prüft. Das beweist nichts und
-  `verify-epic` meldet es als `not proven`.
+  Then assert on the constructor arguments — labels, datasets, type. That is where the
+  defects sit, not in the pixels.
+- Query by role and visible text (`getByRole`, `getByText`), not by CSS classes or test IDs.
+  Chakra generates class names that cannot be relied upon.
+- No assertion that only checks "rendered without an exception". That proves nothing and
+  `verify-epic` reports it as `not proven`.
 
-## Spec-Driven Development
+## Spec-driven development
 
-Größere Änderungen laufen über `specs/` und vier Skills in `.claude/skills/`:
+Larger changes go through `specs/` and four skills in `.claude/skills/`:
 
 ```
-Roadmap-Zeile → /brainstorm E-0n → /write-spec E-0n → /implement-epic E-0n → /verify-epic E-0n
-                (Anforderungen)     (Umsetzungsplan)   (Tests zuerst, dann Code)  (das Gate)
+roadmap line → /brainstorm E-0n → /write-spec E-0n → /implement-epic E-0n → /verify-epic E-0n
+               (requirements)     (implementation plan) (tests first, then code)  (the gate)
 ```
 
-`specs/README.md` ist die verbindliche Konvention: ID-Schema (`FR-`/`AK-`/`NFR-`/`ADR-`/`T-`),
-Traceability und die harten Regeln. Das Wichtigste daraus:
+`specs/README.md` is the binding convention: the ID scheme (`FR-`/`AK-`/`NFR-`/`ADR-`/`T-`),
+traceability and the hard rules. The most important parts:
 
-- Jedes Akzeptanzkriterium wird durch einen Test bewiesen, der **die AK-ID im Testtitel
-  führt** — `it('AK-E02-1.2 — destroys the chart instance on unmount', …)`. Das ist der
-  einzige Traceability-Mechanismus in diesem Stack; `verify-epic` grept danach.
-- Epic-Dokumente werden nur von `brainstorm` und `write-spec` geschrieben.
-  `implement-epic` und `verify-epic` lesen und berichten, sie editieren nie — auch keine
-  Task-Checkboxen.
-- Nie eine Spec an den Code anpassen, nie einen Test abschwächen, nie `--max-warnings`
-  lockern. Abweichung wird gemeldet, nicht wegdefiniert.
+- Every acceptance criterion is proven by a test that **carries the AK ID in its title** —
+  `it('AK-E02-1.2 — destroys the chart instance on unmount', …)`. That is the only
+  traceability mechanism in this stack; `verify-epic` greps for it.
+- Epic documents are written only by `brainstorm` and `write-spec`. `implement-epic` and
+  `verify-epic` read and report, they never edit — not even task checkboxes.
+- Never adapt a spec to the code, never weaken a test, never relax `--max-warnings`. A
+  deviation is reported, not defined away.
 
-Für kleine Änderungen (Tippfehler, eine Farbe, ein Dependency-Bump) ist der Epic-Weg
-Overhead — die gelten direkt, mit grünem Gate.
+For small changes (a typo, a colour, a dependency bump) the epic route is overhead — those
+apply directly, with a green gate.
 
-## Bekannte Baustellen
+## Known rough edges
 
-Diese Punkte sind bewusst dokumentiert, damit sie nicht als Vorbild kopiert werden.
-Nicht ungefragt im Vorbeigehen umbauen — beim Arbeiten an der betroffenen Datei
-aber geradeziehen:
+These points are documented deliberately so they are not copied as a model. Do not rebuild
+them unasked in passing — but do straighten them out when working on the affected file:
 
-1. `utils/chartData.ts` als mutabler, von allen Charts geteilter Datenspeicher.
-2. Chart.js-Instanzen ohne `destroy()` im Cleanup.
-3. `useCoins()` wird doppelt aufgerufen (`App.tsx` + `TableOverview.tsx`).
-4. `isLoaded` im Dependency-Array von `useCoins`.
-5. `currency` ist der String `'eur'`, wird aber als Boolean ausgewertet
-   (`currency ? '€' : '$'`) — der Dollar-Zweig ist tot.
-6. `setCount` / `setPage` / `setCurrency` existieren, werden aber nicht
-   zurückgegeben — Pagination und Währungswechsel sind nicht verdrahtet.
-7. `SearchBar` hat keinen State; der Details-Button in `MainTable` verlinkt auf
-   einen Platzhalterpfad (`toDo-coinDetails/:id`) mit `isExternal`.
-8. `error` wird als Objekt gerendert.
+1. `utils/chartData.ts` as a mutable data store shared by all charts.
+2. Chart.js instances without `destroy()` in the cleanup.
+3. `useCoins()` is called twice (`App.tsx` + `TableOverview.tsx`).
+4. `isLoaded` in the dependency array of `useCoins`.
+5. `currency` is the string `'eur'` but is evaluated as a boolean (`currency ? '€' : '$'`) —
+   the dollar branch is dead.
+6. `setCount` / `setPage` / `setCurrency` exist but are not returned — pagination and
+   currency switching are not wired up.
+7. `SearchBar` has no state; the details button in `MainTable` links to a placeholder path
+   (`toDo-coinDetails/:id`) with `isExternal`.
+8. `error` is rendered as an object.
+9. Leftover German UI strings — `App.tsx` still passes the chart title
+   `'ATH Veränderung in %'`. English is mandatory (see "Language"); correct such strings
+   when touching the file.
 
-## Arbeitsweise
+## How to work here
 
-- Vorhandene Muster der Nachbardateien übernehmen (Imports, Namensgebung,
-  Kommentardichte) statt neue Stile einzuführen.
-- Keine neuen Dependencies ohne Rückfrage — der Stack ist bewusst schlank.
-- Nach Codeänderungen: `npm run lint`, `npm run build` und `npm test` laufen lassen.
-- Commit-Messages im Stil der History: kurz, englisch, beschreibend
-  (z. B. "Added Mockup-Button for DetailsLink on Maintable").
-- Für Pull Requests gibt es die Skill `.claude/skills/github-pull-requests/` —
-  sie regelt Branch-Guard, Plan, Gate (`npm run lint && npm run build && npm test`)
-  und `gh pr create` gegen `master`. PR-Titel dort in Conventional-Commit-Form;
-  das gilt nur für PR-Titel, nicht für Commit-Messages.
+- Adopt the existing patterns of neighbouring files (imports, naming, comment density)
+  instead of introducing new styles.
+- No new dependencies without asking — the stack is deliberately lean.
+- After code changes: run `npm run lint`, `npm run build` and `npm test`.
+- Commit messages in the style of the history: short, English, descriptive (e.g. "Added
+  Mockup-Button for DetailsLink on Maintable").
+- For pull requests there is the skill `.claude/skills/github-pull-requests/` — it governs
+  the branch guard, the plan, the gate (`npm run lint && npm run build && npm test`) and
+  `gh pr create` against `master`. PR titles there in conventional-commit form; that applies
+  to PR titles only, not to commit messages. **The PR description is English, always** — see
+  "Language".
 
-## PRs thematisch schneiden
+## Cutting PRs by concern
 
-Sobald mehr als ein Anliegen offen ist, **vor** dem ersten Branch die Skill
-`.claude/skills/pr-splitting/` anwenden; sie liefert Schnitt, Reihenfolge und
-Base-Branch, `github-pull-requests` öffnet danach jeden einzelnen PR. Kurzfassung
-der Regeln, die hier gelten:
+As soon as more than one concern is in flight, apply the skill `.claude/skills/pr-splitting/`
+**before** the first branch; it delivers the cut, the order and the base branch per PR, and
+`github-pull-requests` then opens each individual PR. Short form of the rules that apply
+here:
 
-- **Ein PR = ein Conventional Commit.** Braucht der Titel ein „und", sind es zwei
-  PRs. Kein Sammel-PR, der alles auf einmal merged.
-- Zusammen gehört, was **eine gemeinsame Ursache** hat (der Chart-Singleton betrifft
-  alle vier Chart-Dateien — trotzdem ein Refactor). Getrennt wird, was nur zufällig
-  **dieselbe Datei** teilt: zwei unabhängige Bugs in `useCoins.ts` sind zwei PRs.
-- **Tests reisen mit der Änderung**, die sie absichern — kein nachgelagerter
-  „add tests"-PR.
-- Unterschiedlicher `type` (`fix` / `feat` / `chore`) heißt unterschiedlicher PR.
-  Mechanisches (Rename, Formatierung, toter Code) nie in einen inhaltlichen Fix mischen.
-- **Reihenfolge:** Docs & Tooling → Leaf-Fixes → Refactors, die State verschieben →
-  Features. PRs werden **gestapelt**: PR *n* zweigt von PR *n−1* ab und targetet
-  dessen Branch, damit der Diff nur die eigene Änderung zeigt. Stack-Position in den
-  PR-Body schreiben und in Stack-Reihenfolge mergen.
-- **Roter Gate:** `master` ist aktuell rot (siehe „Bekannte Baustellen"). Maßstab pro
-  PR ist deshalb „keine *neuen* Fehler", nicht „Gate grün"; die verbleibenden
-  vorbestehenden Fehler gehören in den PR-Body samt Hinweis, welcher spätere PR sie
-  räumt. Der letzte PR im Stack muss den Gate grün hinterlassen. Niemals grün machen
-  durch `--max-warnings`-Aufweichen, Regel-Löschen, `eslint-disable` oder `@ts-ignore`.
+- **One PR = one conventional commit.** If the title needs an "and", it is two PRs. No
+  collective PR that merges everything at once.
+- What belongs together is what shares **one common cause** (the chart singleton affects all
+  four chart files — still one refactor). What gets separated is what merely happens to share
+  **the same file**: two unrelated bugs in `useCoins.ts` are two PRs.
+- **Tests travel with the change** they secure — no trailing "add tests" PR.
+- A different `type` (`fix` / `feat` / `chore`) means a different PR. Never mix mechanical
+  work (rename, formatting, dead code) into a substantive fix.
+- **Order:** docs & tooling → leaf fixes → refactors that move state → features. PRs are
+  **stacked**: PR *n* branches from PR *n−1* and targets that branch so the diff shows only
+  its own change. Write the stack position into the PR body and merge in stack order.
+- **Red gate:** `master` is currently red (see "Known rough edges"). The standard per PR is
+  therefore "no *new* errors", not "gate green"; the remaining pre-existing errors belong in
+  the PR body together with a note on which later PR clears them. The last PR in the stack
+  has to leave the gate green. Never reach green by relaxing `--max-warnings`, deleting a
+  rule, or using `eslint-disable` or `@ts-ignore`.

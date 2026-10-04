@@ -13,7 +13,7 @@ Adapted for this repository from the `cookiefactory/RPL-Replay-Reloaded` origina
 
 ## Phase 0: Pick the mode. Once per session.
 
-**On the very first invocation in a session, ask which mode to run in.** Use `AskUserQuestion`, `header: "PR-Modus"`:
+**On the very first invocation in a session, ask which mode to run in.** Use `AskUserQuestion`, `header: "PR mode"`:
 
 | Mode | Behaviour |
 |---|---|
@@ -74,8 +74,8 @@ Before running any commands, gather context:
 5. **Formulate the PR plan** — present to the user:
    - Base branch (target)
    - Head branch (current)
-   - Suggested title (conventional commit style)
-   - Suggested body (bullet points of what changed, derived from the commits in the range)
+   - Suggested title (conventional commit style, **English**)
+   - Suggested body (bullet points of what changed, derived from the commits in the range, **English**)
    - **Interactive mode** — ask the user to choose via `AskUserQuestion`:
      - **Draft** — PR created as draft, not ready for review
      - **Ready for Review** — PR created ready for review
@@ -114,6 +114,26 @@ For each approved PR:
    ```
 
 4. **Confirm success** — print the PR URL from the command output.
+
+## Language: English, always
+
+**Every PR title and every PR body is written in English.** `CLAUDE.md` §"Language" makes
+English the mandatory primary language of this repository, and the PR description is named
+there explicitly. There is no exception — not for a draft, not for an internal PR, not for
+a body written in a hurry, and not because the conversation with the user was in another
+language. The user's language governs the *chat*, never the artefact.
+
+This applies to every part of the body: headings, prose, table headers and cells, the
+stack note and the gate table. A body that mixes languages counts as not English.
+
+Two consequences worth stating:
+
+- **Writing it in another language first and translating later is not the workflow.** The
+  body presented in the Phase 1 plan is already English, so what the user approves is what
+  gets created.
+- **An existing PR with a non-English body gets rewritten**, via
+  `gh pr edit <n> --body-file <file>`, rather than left as it is. The same holds for a
+  non-English title (`gh pr edit <n> --title "…"`).
 
 ## PR Title Conventions
 
@@ -155,3 +175,5 @@ reference it in the body (`Closes #12`) rather than the title.
 - **Don't** ask for the mode more than once per session — Queue mode saves nothing if it is re-negotiated per PR
 - **Don't** let Queue mode swallow an ambiguity — a dirty worktree, a PR from the target branch or a failing gate still stops that PR and asks
 - **Don't** block on a missing ticket key — this repository has none by design
+- **Don't** write the title or body in anything but English — not even when the user is
+  writing to you in another language; see "Language: English, always"

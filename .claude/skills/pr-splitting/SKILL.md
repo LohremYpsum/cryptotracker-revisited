@@ -26,13 +26,13 @@ git status --short
 git diff --stat HEAD
 ```
 
-plus the epic's task list if this is epic work, plus `CLAUDE.md` §"Bekannte Baustellen" when the work touches a known defect.
+plus the epic's task list if this is epic work, plus `CLAUDE.md` §"Known rough edges" when the work touches a known defect.
 
 For each concern record: **what changes**, **which files**, **which conventional-commit type**, and **what it depends on**.
 
 ## Step 2 — Apply the cut rules
 
-These are the rules from `CLAUDE.md` §"PRs thematisch schneiden", which is the authority. Restated here with the reasoning, because a rule nobody understands gets worked around:
+These are the rules from `CLAUDE.md` §"Cutting PRs by concern", which is the authority. Restated here with the reasoning, because a rule nobody understands gets worked around:
 
 - **One PR = one conventional commit.** If the title needs an "and", it is two PRs. A title is the cheapest possible test of whether a change set is coherent, and it is reliable.
 - **Group by shared cause, not by shared file.** The `initialChartData` singleton touches all four chart components — that is *one* refactor with one cause, so one PR. Two unrelated bugs in `useCoins.ts` share a file and nothing else, so two PRs. Reviewers reason about causes; the file layout is incidental.
@@ -76,7 +76,7 @@ Keep a stack to **5 PRs at most**. A sixth means the work splits into two consec
 
 ## Step 5 — The gate, while `master` is red
 
-`master` currently fails `npm run lint` and `npm run build` (see `CLAUDE.md` §"Befehle"). So the per-PR standard is **"no new errors"**, not "gate green":
+`master` currently fails `npm run lint` and `npm run build` (see `CLAUDE.md` §"Commands"). So the per-PR standard is **"no new errors"**, not "gate green":
 
 1. Record the baseline counts before the first branch:
    ```bash
@@ -92,16 +92,16 @@ Never reach green by weakening the gate: no relaxed `--max-warnings`, no deleted
 ## Step 6 — Present the plan
 
 ```markdown
-## PR-Schnitt — <scope>
+## PR cut — <scope>
 
-| # | Titel | Typ | Dateien | Base | Räumt |
+| # | Title | Type | Files | Base | Clears |
 |---|---|---|---|---|---|
 | 1 | docs: record the testing conventions | docs | CLAUDE.md, specs/ | master | — |
-| 2 | fix(hooks): remove isLoaded from its own effect deps | fix | useCoins.ts | pr-1 | Baustelle 4 |
-| 3 | refactor(charts): derive chart data from props | refactor | charts/*, chartData.ts | pr-2 | Baustelle 1, 2 |
+| 2 | fix(hooks): remove isLoaded from its own effect deps | fix | useCoins.ts | pr-1 | rough edge 4 |
+| 3 | refactor(charts): derive chart data from props | refactor | charts/*, chartData.ts | pr-2 | rough edges 1, 2 |
 
 **Baseline:** lint 11 errors / 4 warnings · build 8 TS6133
-**Nach PR 3:** Gate grün
+**After PR 3:** gate green
 ```
 
 Then hand each row to `github-pull-requests`, in order. Queue mode there is the right choice for a stack of three or more.
