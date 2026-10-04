@@ -23,7 +23,7 @@ describe('TableOverview', () => {
     renderWithChakra(<TableOverview />)
 
     await waitFor(() => {
-      expect(screen.getByText(/konnten nicht geladen werden/i)).toBeInTheDocument()
+      expect(screen.getByText(/could not be loaded/i)).toBeInTheDocument()
     })
   })
 
@@ -33,7 +33,7 @@ describe('TableOverview', () => {
     renderWithChakra(<TableOverview />)
 
     await waitFor(() => {
-      expect(screen.getByText(/zu viele anfragen/i)).toBeInTheDocument()
+      expect(screen.getByText(/too many requests/i)).toBeInTheDocument()
     })
   })
 
@@ -43,6 +43,6 @@ describe('TableOverview', () => {
     renderWithChakra(<TableOverview />)
 
     await waitFor(() => expect(screen.getByText('Currency Name')).toBeInTheDocument())
-    expect(screen.queryByText(/konnten nicht geladen werden/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/could not be loaded/i)).not.toBeInTheDocument()
   })
 })

@@ -18,14 +18,14 @@ export interface FetchCoins {
 // Handing React an axios error object instead crashes the whole tree.
 const toErrorMessage = (error: unknown): string => {
     if (axios.isAxiosError(error)) {
-        if (!error.response) return 'Keine Verbindung zur CoinGecko-API.';
+        if (!error.response) return 'Could not reach the CoinGecko API.';
         if (error.response.status === 429) {
-            return 'Zu viele Anfragen an die CoinGecko-API. Bitte einen Moment warten.';
+            return 'Too many requests to the CoinGecko API. Please wait a moment.';
         }
-        return `Die Marktdaten konnten nicht geladen werden (HTTP ${error.response.status}).`;
+        return `The market data could not be loaded (HTTP ${error.response.status}).`;
     }
     if (error instanceof Error) return error.message;
-    return 'Unbekannter Fehler beim Laden der Marktdaten.';
+    return 'Unknown error while loading the market data.';
 };
 
 const useCoins = () => {
