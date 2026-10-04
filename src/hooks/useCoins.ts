@@ -14,10 +14,24 @@ export interface FetchCoins {
     total_volume: number;
  }
 
+// The error state is rendered straight into JSX, so it has to be a string.
+// Handing React an axios error object instead crashes the whole tree.
+const toErrorMessage = (error: unknown): string => {
+    if (axios.isAxiosError(error)) {
+        if (!error.response) return 'Keine Verbindung zur CoinGecko-API.';
+        if (error.response.status === 429) {
+            return 'Zu viele Anfragen an die CoinGecko-API. Bitte einen Moment warten.';
+        }
+        return `Die Marktdaten konnten nicht geladen werden (HTTP ${error.response.status}).`;
+    }
+    if (error instanceof Error) return error.message;
+    return 'Unbekannter Fehler beim Laden der Marktdaten.';
+};
+
 const useCoins = () => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [coinsData, setCryptos] = useState<FetchCoins[]>([]);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
   
     // States and Actions
     const initResults = 10;
@@ -35,6 +49,7 @@ const useCoins = () => {
 
         const controller = new AbortController();
         setIsLoaded(true);
+        setError(null);
       
         axios
           .get<FetchCoins[]>(
@@ -45,9 +60,9 @@ const useCoins = () => {
             setIsLoaded(false);
             setCryptos(cryptoData);
           })
-          .catch((error) => {
-            if(error instanceof CanceledError) return; 
-            setError(error);
+          .catch((error: unknown) => {
+            if(error instanceof CanceledError) return;
+            setError(toErrorMessage(error));
             setIsLoaded(false);
           });
 

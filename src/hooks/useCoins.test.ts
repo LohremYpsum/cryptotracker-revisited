@@ -54,3 +54,24 @@ describe('useCoins', () => {
     expect(get).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('useCoins error handling', () => {
+  it('exposes the error as a string, never as an object', async () => {
+    vi.spyOn(axios, 'get').mockRejectedValue(new Error('boom'))
+
+    const { result } = renderHook(() => useCoins())
+
+    await waitFor(() => expect(result.current.error).not.toBeNull())
+    expect(typeof result.current.error).toBe('string')
+    expect(result.current.error).toBe('boom')
+  })
+
+  it('clears a previous error when a new request starts', async () => {
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: [coin()] })
+
+    const { result } = renderHook(() => useCoins())
+
+    await waitFor(() => expect(result.current.isLoaded).toBe(false))
+    expect(result.current.error).toBeNull()
+  })
+})

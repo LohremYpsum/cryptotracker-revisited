@@ -4,7 +4,7 @@ import MainTable from './MainTable';
 
 const TableOverview = () => {
 
-    const {coinsData, error, isLoaded, currency} = useCoins();
+    const {coinsData, error, currency} = useCoins();
     
     return (
     <TableContainer>
