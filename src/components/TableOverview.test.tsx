@@ -1,48 +1,35 @@
-import { screen, waitFor } from '@testing-library/react'
-import axios, { AxiosError } from 'axios'
-import type { AxiosResponse } from 'axios'
+import { screen } from '@testing-library/react'
 import { renderWithChakra } from '../test/renderWithChakra'
+import { coin } from '../test/coinFixture'
 import TableOverview from './TableOverview'
 
-function axiosErrorWithStatus(status: number): AxiosError {
-  return new AxiosError('Request failed', 'ERR_BAD_RESPONSE', undefined, undefined, {
-    status,
-    statusText: '',
-    data: {},
-    headers: {},
-    config: {},
-  } as unknown as AxiosResponse)
-}
-
 describe('TableOverview', () => {
-  it('renders the error as readable text instead of crashing', async () => {
-    vi.spyOn(axios, 'get').mockRejectedValue(axiosErrorWithStatus(500))
-
+  it('renders the error as readable text instead of crashing', () => {
     // Rendering an axios error object into JSX throws
     // "Objects are not valid as a React child" and takes the tree down with it.
-    renderWithChakra(<TableOverview />)
+    renderWithChakra(
+      <TableOverview coinsData={[]} error="The market data could not be loaded (HTTP 500)." currency="eur" />,
+    )
 
-    await waitFor(() => {
-      expect(screen.getByText(/could not be loaded/i)).toBeInTheDocument()
-    })
+    expect(screen.getByText(/could not be loaded/i)).toBeInTheDocument()
   })
 
-  it('explains a rate limit in plain language', async () => {
-    vi.spyOn(axios, 'get').mockRejectedValue(axiosErrorWithStatus(429))
+  it('shows no error text when there is no error', () => {
+    renderWithChakra(<TableOverview coinsData={[coin()]} error={null} currency="eur" />)
 
-    renderWithChakra(<TableOverview />)
-
-    await waitFor(() => {
-      expect(screen.getByText(/too many requests/i)).toBeInTheDocument()
-    })
-  })
-
-  it('shows no error text when the request succeeds', async () => {
-    vi.spyOn(axios, 'get').mockResolvedValue({ data: [] })
-
-    renderWithChakra(<TableOverview />)
-
-    await waitFor(() => expect(screen.getByText('Currency Name')).toBeInTheDocument())
+    expect(screen.getByText('Bitcoin')).toBeInTheDocument()
     expect(screen.queryByText(/could not be loaded/i)).not.toBeInTheDocument()
+  })
+
+  it('renders the coins it is given without fetching anything itself', () => {
+    renderWithChakra(
+      <TableOverview
+        coinsData={[coin(), coin({ id: 'ethereum', name: 'Ethereum', symbol: 'eth' })]}
+        error={null}
+        currency="eur"
+      />,
+    )
+
+    expect(screen.getAllByRole('row')).toHaveLength(3)
   })
 })

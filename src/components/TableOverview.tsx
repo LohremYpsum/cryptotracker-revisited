@@ -1,11 +1,15 @@
 import { TableContainer, Text } from '@chakra-ui/react'
-import useCoins from '../hooks/useCoins';
 import MainTable from './MainTable';
+import type { FetchCoins } from '../hooks/useCoins';
 
-const TableOverview = () => {
+interface TableOverviewProps {
+    coinsData: FetchCoins[];
+    error: string | null;
+    currency: string;
+}
 
-    const {coinsData, error, currency} = useCoins();
-    
+const TableOverview = ({coinsData, error, currency}: TableOverviewProps) => {
+
     return (
     <TableContainer>
         {error && <Text>{error}</Text>}
