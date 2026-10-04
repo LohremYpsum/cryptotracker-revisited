@@ -9,16 +9,20 @@ interface NavBarProps {
   onSearchChange: (searchTerm: string) => void;
   currency: string;
   onCurrencyChange: (currency: string) => void;
+  /** The search filters the table, so it only belongs on the route that has one. */
+  showSearch: boolean;
 }
 
-const NavBar = ({ searchTerm, onSearchChange, currency, onCurrencyChange }: NavBarProps) => {
+const NavBar = ({ searchTerm, onSearchChange, currency, onCurrencyChange, showSearch }: NavBarProps) => {
   return (
     <Flex paddingTop={3} alignItems='center' gap={2}>
       <Image src={navLogo} boxSize='60px' marginLeft={2} borderRadius={8} />
         <Spacer />
-    <Box w='150px' h='10'>
-       <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
-    </Box>
+    {showSearch && (
+      <Box w='150px' h='10'>
+        <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
+      </Box>
+    )}
         <Spacer />
     <Box w='110px'>
         <CurrencySwitch currency={currency} onCurrencyChange={onCurrencyChange} />

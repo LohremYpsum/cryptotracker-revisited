@@ -69,16 +69,20 @@ runs when somebody runs it.
 
 ```
 src/
-  main.tsx                 # entry: StrictMode > ChakraProvider > App
-  App.tsx                  # layout, distributes coinsData to the charts
+  main.tsx                 # entry: StrictMode > ChakraProvider > BrowserRouter > App
+  App.tsx                  # shell: owns the coin state, renders NavBar + the route table
   hooks/useCoins.ts        # data fetching + FetchCoins interface
   utils/chartData.ts       # ChartData type + colour palette
   test/
     setup.ts               # jest-dom, cleanup, matchMedia stub for Chakra
-    renderWithChakra.tsx   # render() inside ChakraProvider — for component tests
+    renderWithChakra.tsx   # render() inside ChakraProvider + MemoryRouter
+  pages/                   # one route each, data arrives as props from App
+    Overview.tsx           # '/' — table, pagination and the four charts
+    CoinDetail.tsx         # '/coin/:id' — one coin, resolved from the loaded list
   components/
     MainTable.tsx          # presentational table (props only)
     TableOverview.tsx      # container for MainTable
+    CoinSummary.tsx        # presentational figures of a single coin (props only)
     charts/                # one chart per file, each with its own canvas
     commons/               # NavBar, SearchBar, DarkModeSwitch, NavigationLogo
 specs/                     # spec-driven development, see specs/README.md
@@ -247,8 +251,8 @@ them unasked in passing — but do straighten them out when working on the affec
    the dollar branch is dead.
 6. `setCount` / `setPage` / `setCurrency` exist but are not returned — pagination and
    currency switching are not wired up.
-7. `SearchBar` has no state; the details button in `MainTable` links to a placeholder path
-   (`toDo-coinDetails/:id`) with `isExternal`.
+7. `SearchBar` has no state. *(The second half of this entry — the details button linking
+   out of the app — is resolved: E-05 made it an in-app link to `/coin/:id`.)*
 8. `error` is rendered as an object.
 9. Leftover German UI strings — `App.tsx` still passes the chart title
    `'ATH Veränderung in %'`. English is mandatory (see "Language"); correct such strings

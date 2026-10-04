@@ -1,26 +1,24 @@
-import { useMemo, useState } from 'react'
-import { Box, Container, Stack } from '@chakra-ui/react'
+import { useState } from 'react'
+import { Box } from '@chakra-ui/react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import NavBar from './components/commons/NavBar'
-import TableOverview from './components/TableOverview'
-
-import PiechartMarketCap from './components/charts/PiechartMarketCap'
-import PiechartCirculatingSupply from './components/charts/PiechartCirculatingSupply'
-import BarchartAthChange from './components/charts/BarchartAthChange'
-import PiechartTradeVolume from './components/charts/PiechartTradeVolume'
+import Overview from './pages/Overview'
+import CoinDetail from './pages/CoinDetail'
 
 import useCoins from './hooks/useCoins'
-import { filterCoins } from './utils/filterCoins'
 
 
 function App() {
-  
-  // Fetch Coins once for the whole page and pass them down.
+
+  // Fetch Coins once for the whole page and pass them down. The state lives
+  // above the routes, so navigating to a coin and back costs no request.
   const {coinsData, error, isLoaded, currency, count, page, setCount, setPage, setCurrency} = useCoins();
 
   const [searchTerm, setSearchTerm] = useState('');
 
-  // The search narrows the table only; the charts keep showing the whole page.
-  const visibleCoins = useMemo(() => filterCoins(coinsData, searchTerm), [coinsData, searchTerm]);
+  // The search filters the table, which only the overview has. The term itself
+  // survives the detour so the table looks the same on the way back.
+  const showSearch = useLocation().pathname === '/';
 
   return (
     <Box>
@@ -29,42 +27,41 @@ function App() {
         onSearchChange={setSearchTerm}
         currency={currency}
         onCurrencyChange={setCurrency}
+        showSearch={showSearch}
       />
 
-      <Container maxW={1200}>
-       <TableOverview
-         coinsData={visibleCoins}
-         error={error}
-         currency={currency}
-         page={page}
-         count={count}
-         isLoaded={isLoaded}
-         loadedRows={coinsData.length}
-         onPageChange={setPage}
-         onCountChange={setCount}
-       />
+      <Routes>
+        <Route
+          path='/'
+          element={
+            <Overview
+              coinsData={coinsData}
+              searchTerm={searchTerm}
+              error={error}
+              currency={currency}
+              page={page}
+              count={count}
+              isLoaded={isLoaded}
+              onPageChange={setPage}
+              onCountChange={setCount}
+            />
+          }
+        />
+        <Route
+          path='/coin/:id'
+          element={
+            <CoinDetail
+              coinsData={coinsData}
+              currency={currency}
+              error={error}
+              isLoaded={isLoaded}
+            />
+          }
+        />
+        {/* No id to show: send the user to the table rather than a blank page. */}
+        <Route path='/coin' element={<Navigate to='/' replace />} />
+      </Routes>
 
-      <Stack direction={['column', 'row']} spacing='24px' paddingBottom={50}>
-        <Box flex='1' minW={0} paddingTop={25}>
-          <PiechartMarketCap cryptos={coinsData} chartTitle={'Market Capitalisation (absolute)'} />
-        </Box>
-        <Box flex='1' minW={0} paddingTop={25}>
-          <PiechartCirculatingSupply cryptos={coinsData} chartTitle={'Circulating Supply (absolute)'} />
-        </Box>
-      </Stack>
-
-      <Stack direction={['column', 'row']} spacing='24px'>
-        <Box flex='1' minW={0} paddingTop={25}>
-          <BarchartAthChange cryptos={coinsData} chartTitle={'ATH Change in %'} />
-        </Box>
-        <Box flex='1' minW={0} paddingTop={25}>
-          <PiechartTradeVolume cryptos={coinsData} chartTitle={'Current Trading Volume (absolute)'}/>
-        </Box>
-      </Stack>
-
-  
-      </Container>
-      
     </Box>
   )
 }
