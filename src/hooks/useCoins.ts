@@ -45,7 +45,7 @@ const useCoins = () => {
      // Call API Endpoint (Refactor to Hooks Folder)
      useEffect(() => {
         const baseUrl = `https://api.coingecko.com/api/v3`;
-        const apiUrl = `/coins/markets?&page=${page}&per_page=${count}&vs_currency=${currency ? 'eur' : 'usd'}&order=market_cap_desc&sparkline=false`;
+        const apiUrl = `/coins/markets?&page=${page}&per_page=${count}&vs_currency=${currency}&order=market_cap_desc&sparkline=false`;
 
         const controller = new AbortController();
         setIsLoaded(true);

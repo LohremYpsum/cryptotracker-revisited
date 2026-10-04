@@ -9,7 +9,7 @@ const SearchBar = () => {
         <InputLeftElement pointerEvents='none'>
         <Icon as={CiSearch} />
         </InputLeftElement>
-        <Input type='text' placeholder='Seach Coin' />
+        <Input type='text' placeholder='Search coin' />
     </InputGroup>
     </Stack>
   )

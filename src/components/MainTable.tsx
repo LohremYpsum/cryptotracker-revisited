@@ -1,5 +1,6 @@
 import { Table, TableCaption, Thead, Tr, Th, Tbody, Td, Image, Button, Link} from '@chakra-ui/react'
-import { FetchCoins } from '../hooks/useCoins';
+import type { FetchCoins } from '../hooks/useCoins';
+import { currencySymbol } from '../utils/currency';
 
 interface MainTableProps {
     coinsData: FetchCoins[];
@@ -33,10 +34,10 @@ const MainTable = ({coinsData, currency}: MainTableProps) => {
         <Td>{singleEntry.name}</Td>
         <Td>{singleEntry.symbol.toUpperCase()}</Td>
         <Td isNumeric>
-            {singleEntry.current_price} {currency ? '€' : '$'}
+            {singleEntry.current_price} {currencySymbol(currency)}
         </Td>
         <Td isNumeric>
-            {singleEntry.ath} {currency ? '€' : '$'}
+            {singleEntry.ath} {currencySymbol(currency)}
         </Td>
         <Td>
           <Button as={Link} href={`https://www.coingecko.com/en/coins/${singleEntry.id}`} isExternal>

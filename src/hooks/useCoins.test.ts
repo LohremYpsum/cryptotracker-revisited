@@ -75,3 +75,14 @@ describe('useCoins error handling', () => {
     expect(result.current.error).toBeNull()
   })
 })
+
+describe('useCoins request url', () => {
+  it('asks the API for the selected currency', async () => {
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: [coin()] })
+
+    const { result } = renderHook(() => useCoins())
+    await waitFor(() => expect(result.current.isLoaded).toBe(false))
+
+    expect(get.mock.calls[0][0]).toContain('vs_currency=eur')
+  })
+})

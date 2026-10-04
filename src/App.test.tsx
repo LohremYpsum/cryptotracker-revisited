@@ -45,3 +45,28 @@ describe('App', () => {
     expect(screen.getByText('Bitcoin')).toBeInTheDocument()
   })
 })
+
+describe('App user-facing copy', () => {
+  it('labels every chart in English', async () => {
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: [coin()] })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+
+    // CLAUDE.md makes English mandatory for user-facing strings. These four
+    // titles were the last German copy left in the app.
+    expect(screen.getByText('Market Capitalisation (absolute)')).toBeInTheDocument()
+    expect(screen.getByText('Circulating Supply (absolute)')).toBeInTheDocument()
+    expect(screen.getByText('ATH Change in %')).toBeInTheDocument()
+    expect(screen.getByText('Current Trading Volume (absolute)')).toBeInTheDocument()
+  })
+
+  it('spells the search placeholder correctly', async () => {
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: [coin()] })
+
+    renderWithChakra(<App />)
+
+    expect(screen.getByPlaceholderText('Search coin')).toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('Seach Coin')).not.toBeInTheDocument()
+  })
+})
