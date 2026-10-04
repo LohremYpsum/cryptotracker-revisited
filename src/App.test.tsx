@@ -185,3 +185,214 @@ describe('App search', () => {
     expect(screen.getByText('Market Capitalisation (absolute)')).toBeInTheDocument()
   })
 })
+
+describe('App coin detail navigation', () => {
+  const page = [
+    coin({ id: 'bitcoin', name: 'Bitcoin', symbol: 'btc', current_price: 50000 }),
+    coin({ id: 'ethereum', name: 'Ethereum', symbol: 'eth', current_price: 3123 }),
+  ]
+
+  it('AK-E05-1.3 — opens the coin detail view in place of the table', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+
+    const [details] = screen.getAllByRole('link', { name: 'Details' })
+    await user.click(details)
+
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: 'Back to overview' })).toBeInTheDocument(),
+    )
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  })
+
+  it('AK-E05-1.4 — sends no request when opening a coin', async () => {
+    const user = userEvent.setup()
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+    const before = get.mock.calls.length
+
+    await user.click(screen.getAllByRole('link', { name: 'Details' })[0])
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: 'Back to overview' })).toBeInTheDocument(),
+    )
+
+    // The detail view reads the coin the overview already loaded.
+    expect(get).toHaveBeenCalledTimes(before)
+  })
+
+  it('AK-E05-3.2 — returns to the table from the detail view', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+
+    await user.click(screen.getAllByRole('link', { name: 'Details' })[0])
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: 'Back to overview' })).toBeInTheDocument(),
+    )
+
+    await user.click(screen.getByRole('link', { name: 'Back to overview' }))
+
+    await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument())
+  })
+
+  it('AK-E05-3.3 — sends no request when returning to the table', async () => {
+    const user = userEvent.setup()
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+
+    await user.click(screen.getAllByRole('link', { name: 'Details' })[0])
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: 'Back to overview' })).toBeInTheDocument(),
+    )
+    const before = get.mock.calls.length
+
+    await user.click(screen.getByRole('link', { name: 'Back to overview' }))
+    await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument())
+
+    expect(get).toHaveBeenCalledTimes(before)
+  })
+
+  it('AK-E05-5.3 — makes exactly one request for a mount, a coin and the way back', async () => {
+    const user = userEvent.setup()
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+
+    await user.click(screen.getAllByRole('link', { name: 'Details' })[0])
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: 'Back to overview' })).toBeInTheDocument(),
+    )
+    await user.click(screen.getByRole('link', { name: 'Back to overview' }))
+    await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument())
+
+    expect(get).toHaveBeenCalledTimes(1)
+  })
+
+  it('AK-E05-3.4 — keeps page, page size and currency across the detour', async () => {
+    const user = userEvent.setup()
+    const full = Array.from({ length: 10 }, (_, i) => coin({ id: `c${i}`, name: `Coin ${i}` }))
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: full })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Coin 0')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'Next' }))
+    await waitFor(() => expect(screen.getByText('Page 2')).toBeInTheDocument())
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Coins per page' }), '25')
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(3))
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Display currency' }), 'usd')
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(4))
+
+    await user.click(screen.getAllByRole('link', { name: 'Details' })[0])
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: 'Back to overview' })).toBeInTheDocument(),
+    )
+    await user.click(screen.getByRole('link', { name: 'Back to overview' }))
+    await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument())
+
+    // Coming back must not drop the user on page 1 in euros.
+    expect(screen.getByText('Page 2')).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Coins per page' })).toHaveValue('25')
+    expect(screen.getByRole('combobox', { name: 'Display currency' })).toHaveValue('usd')
+    expect(get).toHaveBeenCalledTimes(4)
+  })
+
+  it('AK-E05-5.6 — keeps the search term across the detour', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+
+    await user.type(screen.getByRole('textbox', { name: 'Search coin' }), 'eth')
+    await waitFor(() => expect(screen.queryByText('Bitcoin')).not.toBeInTheDocument())
+
+    await user.click(screen.getByRole('link', { name: 'Details' }))
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: 'Back to overview' })).toBeInTheDocument(),
+    )
+    await user.click(screen.getByRole('link', { name: 'Back to overview' }))
+
+    // The input is hidden on the detail route; the term itself must survive it.
+    await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument())
+    expect(screen.getByRole('textbox', { name: 'Search coin' })).toHaveValue('eth')
+    expect(screen.queryByText('Bitcoin')).not.toBeInTheDocument()
+  })
+})
+
+describe('App routes', () => {
+  // 88888 collides with no other field of the fixture; /50000/ would also match
+  // the total_volume of 500000 and make getByText ambiguous.
+  const page = [coin({ id: 'bitcoin', name: 'Bitcoin', symbol: 'btc', current_price: 88888 })]
+
+  it('AK-E05-5.1 — renders the full overview at /', async () => {
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />)
+
+    await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument())
+    expect(screen.getByRole('textbox', { name: 'Search coin' })).toBeInTheDocument()
+    expect(screen.getByText('Page 1')).toBeInTheDocument()
+    expect(screen.getByText('Market Capitalisation (absolute)')).toBeInTheDocument()
+    expect(screen.getByText('Circulating Supply (absolute)')).toBeInTheDocument()
+    expect(screen.getByText('ATH Change in %')).toBeInTheDocument()
+    expect(screen.getByText('Current Trading Volume (absolute)')).toBeInTheDocument()
+  })
+
+  it('AK-E05-5.2 — renders neither the table nor the charts at /coin/:id', async () => {
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />, { initialEntries: ['/coin/bitcoin'] })
+
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(screen.queryByText('Market Capitalisation (absolute)')).not.toBeInTheDocument()
+    expect(screen.queryByText('Circulating Supply (absolute)')).not.toBeInTheDocument()
+    expect(screen.queryByText('ATH Change in %')).not.toBeInTheDocument()
+    expect(screen.queryByText('Current Trading Volume (absolute)')).not.toBeInTheDocument()
+  })
+
+  it('AK-E05-5.5 — hides the search but keeps currency and dark mode on the detail route', async () => {
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />, { initialEntries: ['/coin/bitcoin'] })
+
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+    expect(screen.queryByRole('textbox', { name: 'Search coin' })).not.toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Display currency' })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Toggle dark mode' })).toBeInTheDocument()
+  })
+
+  it('AK-E05-2.8 — relabels the figures when the currency changes on the detail route', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />, { initialEntries: ['/coin/bitcoin'] })
+    await waitFor(() => expect(screen.getByText(/88888/)).toHaveTextContent('€'))
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Display currency' }), 'usd')
+
+    await waitFor(() => expect(screen.getByText(/88888/)).toHaveTextContent('$'))
+    // Still on the coin, not bounced back to the table.
+    expect(screen.getByRole('link', { name: 'Back to overview' })).toBeInTheDocument()
+  })
+
+  it('renders the overview for /coin without an id', async () => {
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    // No id to show, so the user belongs at the table rather than on a blank page.
+    renderWithChakra(<App />, { initialEntries: ['/coin'] })
+
+    await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument())
+  })
+})
