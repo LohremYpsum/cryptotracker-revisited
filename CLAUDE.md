@@ -170,6 +170,53 @@ Konventionen, die hier gelten und beibehalten werden sollen:
   Komponenten exportiert (`react-refresh/only-export-components`) — Hilfsfunktionen
   und Konstanten in eigene Dateien legen.
 
+### Tests (Vitest + Testing Library)
+
+- `globals: true` ist gesetzt — `describe`/`it`/`expect`/`vi` **nicht** importieren.
+  Für Testdateien gibt es ein ESLint-Override, das diese Globals kennt.
+- Chakra-Komponenten mit `renderWithChakra` aus `src/test/renderWithChakra.tsx`
+  rendern, nie mit dem nackten `render` — sonst fehlt der Theme-Context.
+- Hooks mit `renderHook` aus `@testing-library/react` testen.
+- **Chart.js lässt sich in jsdom nicht visuell prüfen.** jsdom hat keinen
+  2D-Canvas-Context, `getContext('2d')` liefert `null`. Prüfbar ist die Konfiguration,
+  die an Chart.js übergeben wird:
+
+  ```ts
+  vi.mock('chart.js/auto', () => ({ default: vi.fn(() => ({ destroy: vi.fn() })) }))
+  ```
+
+  Danach auf die Konstruktor-Argumente assertieren — Labels, Datasets, Typ. Genau dort
+  sitzen die Defekte, nicht in den Pixeln.
+- Abfragen nach Rolle und sichtbarem Text (`getByRole`, `getByText`), nicht nach
+  CSS-Klassen oder Test-IDs. Chakra generiert Klassennamen, auf die man sich nicht
+  verlassen kann.
+- Keine Assertion, die nur „gerendert ohne Exception" prüft. Das beweist nichts und
+  `verify-epic` meldet es als `not proven`.
+
+## Spec-Driven Development
+
+Größere Änderungen laufen über `specs/` und vier Skills in `.claude/skills/`:
+
+```
+Roadmap-Zeile → /brainstorm E-0n → /write-spec E-0n → /implement-epic E-0n → /verify-epic E-0n
+                (Anforderungen)     (Umsetzungsplan)   (Tests zuerst, dann Code)  (das Gate)
+```
+
+`specs/README.md` ist die verbindliche Konvention: ID-Schema (`FR-`/`AK-`/`NFR-`/`ADR-`/`T-`),
+Traceability und die harten Regeln. Das Wichtigste daraus:
+
+- Jedes Akzeptanzkriterium wird durch einen Test bewiesen, der **die AK-ID im Testtitel
+  führt** — `it('AK-E02-1.2 — destroys the chart instance on unmount', …)`. Das ist der
+  einzige Traceability-Mechanismus in diesem Stack; `verify-epic` grept danach.
+- Epic-Dokumente werden nur von `brainstorm` und `write-spec` geschrieben.
+  `implement-epic` und `verify-epic` lesen und berichten, sie editieren nie — auch keine
+  Task-Checkboxen.
+- Nie eine Spec an den Code anpassen, nie einen Test abschwächen, nie `--max-warnings`
+  lockern. Abweichung wird gemeldet, nicht wegdefiniert.
+
+Für kleine Änderungen (Tippfehler, eine Farbe, ein Dependency-Bump) ist der Epic-Weg
+Overhead — die gelten direkt, mit grünem Gate.
+
 ## Bekannte Baustellen
 
 Diese Punkte sind bewusst dokumentiert, damit sie nicht als Vorbild kopiert werden.
@@ -193,12 +240,12 @@ aber geradeziehen:
 - Vorhandene Muster der Nachbardateien übernehmen (Imports, Namensgebung,
   Kommentardichte) statt neue Stile einzuführen.
 - Keine neuen Dependencies ohne Rückfrage — der Stack ist bewusst schlank.
-- Nach Codeänderungen: `npm run lint` und `npm run build` laufen lassen.
+- Nach Codeänderungen: `npm run lint`, `npm run build` und `npm test` laufen lassen.
 - Commit-Messages im Stil der History: kurz, englisch, beschreibend
   (z. B. "Added Mockup-Button for DetailsLink on Maintable").
 - Für Pull Requests gibt es die Skill `.claude/skills/github-pull-requests/` —
-  sie regelt Branch-Guard, Plan, Gate (`npm run lint && npm run build`) und
-  `gh pr create` gegen `master`. PR-Titel dort in Conventional-Commit-Form;
+  sie regelt Branch-Guard, Plan, Gate (`npm run lint && npm run build && npm test`)
+  und `gh pr create` gegen `master`. PR-Titel dort in Conventional-Commit-Form;
   das gilt nur für PR-Titel, nicht für Commit-Messages.
 
 ## PRs thematisch schneiden

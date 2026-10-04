@@ -1,154 +1,116 @@
 ---
 name: pr-splitting
-description: "Apply this skill BEFORE creating pull requests whenever the pending work covers more than one concern — a dirty worktree with mixed changes, a batch of review findings, a refactor plus the bugfix that motivated it. Covers: slicing work into PRs that each map to exactly one Conventional Commit type+scope, ordering them into a dependency stack, choosing each PR's base branch, and handling a repository whose quality gate is already red. Does NOT cover: the mechanics of opening the PR itself — hand off to `github-pull-requests` for that."
-license: MIT
+description: Cut a pile of pending or planned work into thematically separate, stacked pull requests — one concern per PR, each with its own conventional-commit type, in a dependency-correct order. Use before opening the first PR whenever more than one concern is in flight, when the working tree mixes unrelated changes, when asked how to split a change set, or when a PR body would need the word "and". Produces the cut, the order and the base branch per PR; github-pull-requests then opens each one.
 ---
 
-# PR Splitting
+# pr-splitting
 
-One PR, one reason to exist. This skill decides **what goes in which PR and in what order**;
-`github-pull-requests` then opens each one. Run this skill first, then that one per slice.
+Decide **how many pull requests a change set becomes, in what order, and off which base** — before the first branch exists. Running this after the work sits in one commit on one branch means untangling it by hand, which is the cost this skill exists to avoid.
 
-## The rule
+This skill produces a plan. It does not open PRs — `github-pull-requests` does, once per planned PR.
 
-> **If a PR's title needs an "and", it is two PRs.**
+## Input
 
-A PR that cannot be described by a single Conventional Commit subject line — one `type`, one
-`scope`, one imperative description — is carrying more than one concern and must be split.
-"Fix the fetch loop **and** the error rendering" is two bugs for two reasons; they get two PRs
-even though both touch `useCoins.ts`.
+```
+/pr-splitting [<scope>]
+```
 
-Never open a single "here is everything I found" PR. A reviewer approving a 400-line mixed diff
-is not reviewing it.
+`<scope>` is optional: a list of concerns, an epic ID, or nothing at all (then read the working tree and the roadmap).
 
-## Phase 1: Inventory the concerns
+## Step 1 — Inventory the concerns
 
-Before touching a branch, list every pending change as a one-line Conventional Commit subject.
-Work from the actual diff and the actual findings, not from memory:
+List every distinct concern currently in flight. Sources, in order:
 
 ```bash
 git status --short
-git diff --stat
-npm run lint 2>&1 | tail -40     # the gate's complaints are themselves a work inventory
-npm run build 2>&1 | tail -40
+git diff --stat HEAD
 ```
 
-Write the inventory out explicitly, e.g.:
+plus the epic's task list if this is epic work, plus `CLAUDE.md` §"Bekannte Baustellen" when the work touches a known defect.
+
+For each concern record: **what changes**, **which files**, **which conventional-commit type**, and **what it depends on**.
+
+## Step 2 — Apply the cut rules
+
+These are the rules from `CLAUDE.md` §"PRs thematisch schneiden", which is the authority. Restated here with the reasoning, because a rule nobody understands gets worked around:
+
+- **One PR = one conventional commit.** If the title needs an "and", it is two PRs. A title is the cheapest possible test of whether a change set is coherent, and it is reliable.
+- **Group by shared cause, not by shared file.** The `initialChartData` singleton touches all four chart components — that is *one* refactor with one cause, so one PR. Two unrelated bugs in `useCoins.ts` share a file and nothing else, so two PRs. Reviewers reason about causes; the file layout is incidental.
+- **Tests travel with the change they prove.** Never a trailing "add tests" PR. A PR whose behaviour change arrives without its test is unreviewable, and the test is the thing that makes the claim checkable.
+- **Different type means different PR.** `fix`, `feat` and `chore` do not mix. Mechanical work — renames, formatting, dead-code removal — never rides along with a behavioural fix, because it inflates the diff and hides the one line that matters.
+
+Apply them in that order. The first rule that splits a group, splits it.
+
+## Step 3 — Order the stack
+
+Fixed order, because each tier unblocks the next:
 
 ```
-fix(hooks):    isLoaded in dep array -> refetch loop
-fix(hooks):    error state is an object, crashes React when rendered
-feat(hooks):   setPage/setCount/setCurrency exist but are never returned
-refactor(app): useCoins called twice -> two requests for the same data
-fix(charts):   Chart instances never destroyed
-chore:         dead NavigationLogo stub breaks tsc
+1. Docs & Tooling          (no behaviour change, lands first, shrinks every later diff)
+2. Leaf fixes              (self-contained, no shared state moved)
+3. Refactors moving state  (the ripple tier — everything above rebases on it)
+4. Features                (built on the corrected foundation)
 ```
 
-Each line is one PR. If two lines have the same `type(scope)` **and** the same root cause, merge
-them. If one line has two verbs, split it.
+Within a tier, order by dependency. A concern that cannot be placed in a tier is usually two concerns.
 
-## Phase 2: Group — what belongs together
+## Step 4 — Stack the branches
 
-Put changes in the **same** PR when:
-
-- They share one root cause. Fixing the shared mutable chart singleton necessarily touches all
-  four chart files — that is one refactor, not four.
-- One is mechanically required by the other. A dependency bump that a new tool needs ships with
-  that tool; a rename ships with its call sites.
-- A fix and its regression test. **Tests ride along with the change they cover** — never a
-  trailing "add tests" PR for work already merged.
-
-Put changes in **different** PRs when:
-
-- The `type` differs (`fix` vs `feat` vs `chore`) — different types mean different review
-  questions and different release-note lines.
-- They are independently revertible. If reverting one would not require reverting the other,
-  they were never one change.
-- One is mechanical and one is semantic. Formatting, renames and import sorting drown a real
-  fix; send them separately so the reviewer can skim one and read the other.
-- They only share a *file*. Co-location is not a theme. Two unrelated bugs in `useCoins.ts` are
-  two PRs.
-
-## Phase 3: Order — build the stack
-
-Sort the inventory so each PR only depends on PRs already in front of it:
-
-1. **Docs and tooling first.** Guidelines, skills, test harness, lint config. They touch no
-   product code, so they can never conflict with what follows and they unblock tests.
-2. **Leaf fixes next** — changes contained in one module with no callers to update.
-3. **Refactors that move state or change signatures after** their leaf fixes, so the fixes stay
-   small diffs against unmoved code.
-4. **Features last.** A feature on top of fixed foundations is a small diff; the same feature
-   first drags the fixes into its own review.
-
-### Base branches
-
-Stack the branches. PR *n* is branched from and targets PR *n-1*'s branch, not `master`:
+PR *n* branches from PR *n−1* and **targets that branch**, not `master`. This is the point of the stack: each diff shows only its own change, so review effort scales with the change rather than with its position in the queue.
 
 ```bash
-git checkout -b fix/second-thing          # while still on fix/first-thing
-gh pr create --base fix/first-thing --head fix/second-thing ...
+git switch -c <branch-1>                 # off master
+# … work, commit …
+git switch -c <branch-2>                 # off branch-1, not master
 ```
 
-This keeps each PR's diff to **only its own change**. Branching every PR off `master` instead
-makes PR 7 show the diff of PRs 2-7 together, which defeats the split.
+Each PR body states its stack position:
 
-State the base branch explicitly in every PR plan, and note the stack position in the PR body
-(`Stacked on #12 — merge that first`). Merge in stack order. When GitHub auto-retargets a PR
-after its base merges, verify the diff is still only that PR's change.
+```markdown
+**Stack:** 2 / 4 — based on #11, blocks #13
+```
 
-Branch off `master` directly only for a slice that is genuinely independent of everything else
-in the batch — and say so in the plan.
+**Merge in stack order.** Merging out of order puts changes into `master` that the lower PR's diff claims are not there yet, and every branch above has to be rebased by hand.
 
-## Phase 4: Handle a red gate honestly
+Keep a stack to **5 PRs at most**. A sixth means the work splits into two consecutive stacks: ship and merge the first, then branch the second off the updated `master`.
 
-A repository whose `npm run lint && npm run build` is **already failing on `master`** is common
-and must not silently block the stack or get bulldozed into one giant green-it-all PR.
+## Step 5 — The gate, while `master` is red
 
-- Record the baseline failures **before** the first branch — count and list them.
-- After each PR, re-run the gate and compare against that baseline. The bar per PR is
-  **"introduces no new failures"**, not "gate is green".
-- Put the remaining pre-existing failures in the PR body, naming which later PR in the stack
-  clears each one. The reviewer then knows a red gate is expected, not a regression.
-- The **last** PR in the stack must leave the gate green. If it does not, the inventory missed
-  something — go back to Phase 1.
-- Never make the gate pass by relaxing `--max-warnings`, deleting a rule, or adding
-  `eslint-disable` / `@ts-ignore` to code you are not otherwise fixing.
+`master` currently fails `npm run lint` and `npm run build` (see `CLAUDE.md` §"Befehle"). So the per-PR standard is **"no new errors"**, not "gate green":
 
-## Phase 5: Hand off
+1. Record the baseline counts before the first branch:
+   ```bash
+   npm run lint 2>&1 | tail -3
+   npm run build 2>&1 | tail -20
+   ```
+2. For each PR, re-run and compare. Equal or fewer is acceptable; more is a blocker.
+3. State the remaining pre-existing failures in the PR body, naming **which later PR clears them**. An unexplained red check gets normalized, and then a real failure goes unnoticed.
+4. **The last PR in the stack must leave the gate green.** That is the stack's exit condition.
 
-For each slice, in stack order, invoke `github-pull-requests` with the base branch, head branch,
-title and body this skill produced. Answer its Phase 0 mode question **once** — a batch of
-stacked PRs is exactly the case Queue mode exists for — and let it run the gate and push.
+Never reach green by weakening the gate: no relaxed `--max-warnings`, no deleted rule, no `eslint-disable`, no `@ts-ignore`. Those convert a caught defect into an invisible one.
 
-## Writing the title
+## Step 6 — Present the plan
 
-The PR title is a Conventional Commit subject: `type(scope): imperative description`, lower
-case, no trailing period, under ~72 characters.
+```markdown
+## PR-Schnitt — <scope>
 
-| Type | Use it when the PR... |
-|---|---|
-| `feat` | adds behaviour a user can observe |
-| `fix` | makes existing behaviour correct |
-| `refactor` | changes structure with no behaviour change |
-| `perf` | makes it faster, same behaviour |
-| `test` | adds or changes tests only |
-| `docs` | changes documentation or guidelines only |
-| `chore` | dependencies, config, tooling, dead-code removal |
-| `style` | formatting only, no code meaning changed |
+| # | Titel | Typ | Dateien | Base | Räumt |
+|---|---|---|---|---|---|
+| 1 | docs: record the testing conventions | docs | CLAUDE.md, specs/ | master | — |
+| 2 | fix(hooks): remove isLoaded from its own effect deps | fix | useCoins.ts | pr-1 | Baustelle 4 |
+| 3 | refactor(charts): derive chart data from props | refactor | charts/*, chartData.ts | pr-2 | Baustelle 1, 2 |
 
-Scopes in this repository follow the source layout: `hooks`, `charts`, `table`, `commons`,
-`app`, `ui`, `search`, `test`, `deps`. Omit the scope when a change is genuinely repo-wide.
+**Baseline:** lint 11 errors / 4 warnings · build 8 TS6133
+**Nach PR 3:** Gate grün
+```
 
-Commit **messages** inside the branch stay in this repository's existing plain-English style per
-`CLAUDE.md`; only the **PR title** is Conventional Commit form.
+Then hand each row to `github-pull-requests`, in order. Queue mode there is the right choice for a stack of three or more.
 
-## Common pitfalls
+## Hard rules
 
-- **Don't** open the "everything I found" PR — split it, even under time pressure.
-- **Don't** let a shared file force unrelated changes together.
-- **Don't** branch every PR off `master` when the work is sequential — stack it.
-- **Don't** defer tests to a later PR; they ship with the change they cover.
-- **Don't** mix a mechanical rename or reformat into a semantic fix.
-- **Don't** report a red gate as success, and don't silence it to look green.
-- **Don't** re-ask the PR mode per slice — decide once for the batch.
+- **Never open the first PR before the cut is decided.** Splitting after the fact costs more than planning it.
+- **Never merge a stack out of order**, and never rebase a lower branch without rebasing everything above it.
+- **Never mix a mechanical change into a behavioural one**, however small the rename.
+- **Never let a PR body say "and"** in its title. That is the signal to split, not to phrase it better.
+- **Never make the gate green by weakening it.**
+- This skill plans. It does not implement, and it does not open PRs.
