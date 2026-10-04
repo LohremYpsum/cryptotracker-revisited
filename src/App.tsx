@@ -24,19 +24,19 @@ function App() {
 
       <Stack direction={['column', 'row']} spacing='24px' paddingBottom={50}>
         <Box w='600px' paddingTop={25} >
-          <PiechartMarketCap cryptos={coinsData} chartTitle={'Marktkapitalisierung (Abs. Zahlen)'} />
+          <PiechartMarketCap cryptos={coinsData} chartTitle={'Market Capitalisation (absolute)'} />
         </Box>
         <Box w='600px' paddingTop={25}>
-          <PiechartCirculatingSupply cryptos={coinsData} chartTitle={'Umlaufmenge (Abs. Zahlen)'} />
+          <PiechartCirculatingSupply cryptos={coinsData} chartTitle={'Circulating Supply (absolute)'} />
         </Box>
       </Stack>
 
       <Stack direction={['column', 'row']} spacing='24px'>
         <Box w='600px' h='40px' paddingTop={25}>
-          <BarchartAthChange cryptos={coinsData} chartTitle={'ATH Veränderung in %'} />
+          <BarchartAthChange cryptos={coinsData} chartTitle={'ATH Change in %'} />
         </Box>
         <Box w='600px' h='40px' paddingTop={25}>
-          <PiechartTradeVolume cryptos={coinsData} chartTitle={'Aktuelles Handelsvolumen (Abs. Zahlen)'}/>
+          <PiechartTradeVolume cryptos={coinsData} chartTitle={'Current Trading Volume (absolute)'}/>
         </Box>
       </Stack>
 
