@@ -14,10 +14,24 @@ export interface FetchCoins {
     total_volume: number;
  }
 
+// The error state is rendered straight into JSX, so it has to be a string.
+// Handing React an axios error object instead crashes the whole tree.
+const toErrorMessage = (error: unknown): string => {
+    if (axios.isAxiosError(error)) {
+        if (!error.response) return 'Could not reach the CoinGecko API.';
+        if (error.response.status === 429) {
+            return 'Too many requests to the CoinGecko API. Please wait a moment.';
+        }
+        return `The market data could not be loaded (HTTP ${error.response.status}).`;
+    }
+    if (error instanceof Error) return error.message;
+    return 'Unknown error while loading the market data.';
+};
+
 const useCoins = () => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [coinsData, setCryptos] = useState<FetchCoins[]>([]);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
   
     // States and Actions
     const initResults = 10;
@@ -35,6 +49,7 @@ const useCoins = () => {
 
         const controller = new AbortController();
         setIsLoaded(true);
+        setError(null);
       
         axios
           .get<FetchCoins[]>(
@@ -45,14 +60,14 @@ const useCoins = () => {
             setIsLoaded(false);
             setCryptos(cryptoData);
           })
-          .catch((error) => {
-            if(error instanceof CanceledError) return; 
-            setError(error);
+          .catch((error: unknown) => {
+            if(error instanceof CanceledError) return;
+            setError(toErrorMessage(error));
             setIsLoaded(false);
           });
 
           return () => controller.abort();
-      }, [count, page, currency, isLoaded]);
+      }, [count, page, currency]);
 
   return {coinsData, error, isLoaded, currency }
 }
