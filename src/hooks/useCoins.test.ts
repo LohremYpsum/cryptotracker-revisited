@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import axios from 'axios'
 import useCoins from './useCoins'
 import type { FetchCoins } from './useCoins'
@@ -84,5 +84,57 @@ describe('useCoins request url', () => {
     await waitFor(() => expect(result.current.isLoaded).toBe(false))
 
     expect(get.mock.calls[0][0]).toContain('vs_currency=eur')
+  })
+})
+
+describe('useCoins controls', () => {
+  it('refetches the next page when setPage is called', async () => {
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: [coin()] })
+
+    const { result } = renderHook(() => useCoins())
+    await waitFor(() => expect(result.current.isLoaded).toBe(false))
+    expect(get.mock.calls[0][0]).toContain('&page=1')
+
+    act(() => result.current.setPage(2))
+
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
+    expect(get.mock.calls[1][0]).toContain('&page=2')
+  })
+
+  it('refetches in the new currency when setCurrency is called', async () => {
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: [coin()] })
+
+    const { result } = renderHook(() => useCoins())
+    await waitFor(() => expect(result.current.isLoaded).toBe(false))
+
+    act(() => result.current.setCurrency('usd'))
+
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
+    expect(get.mock.calls[1][0]).toContain('vs_currency=usd')
+    await waitFor(() => expect(result.current.currency).toBe('usd'))
+  })
+
+  it('refetches with a new page size when setCount is called', async () => {
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: [coin()] })
+
+    const { result } = renderHook(() => useCoins())
+    await waitFor(() => expect(result.current.isLoaded).toBe(false))
+    expect(result.current.count).toBe(10)
+
+    act(() => result.current.setCount(25))
+
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
+    expect(get.mock.calls[1][0]).toContain('per_page=25')
+  })
+
+  it('exposes the current page and page size', async () => {
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: [coin()] })
+
+    const { result } = renderHook(() => useCoins())
+    await waitFor(() => expect(result.current.isLoaded).toBe(false))
+
+    expect(result.current.page).toBe(1)
+    expect(result.current.count).toBe(10)
+    expect(result.current.currency).toBe('eur')
   })
 })

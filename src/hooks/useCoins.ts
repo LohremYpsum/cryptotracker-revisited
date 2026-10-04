@@ -37,9 +37,9 @@ const useCoins = () => {
     const initResults = 10;
     const initPage = 1;
     const initCurrency = 'eur';
-    const [count] = useState(initResults);
-    const [page] = useState(initPage);
-    const [currency] = useState(initCurrency);
+    const [count, setCount] = useState(initResults);
+    const [page, setPage] = useState(initPage);
+    const [currency, setCurrency] = useState(initCurrency);
     
 
      // Call API Endpoint (Refactor to Hooks Folder)
@@ -69,7 +69,7 @@ const useCoins = () => {
           return () => controller.abort();
       }, [count, page, currency]);
 
-  return {coinsData, error, isLoaded, currency }
+  return {coinsData, error, isLoaded, currency, count, page, setCount, setPage, setCurrency }
 }
 
 export default useCoins;
