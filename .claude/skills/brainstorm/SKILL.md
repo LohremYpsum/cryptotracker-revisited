@@ -69,8 +69,8 @@ Nothing in the roadmap decides this, and the choice determines whether every con
 takes props or a hook, which changes the test surface of all four charts.
 
 - [ ] **A — Lift to `App.tsx`, pass props down** *(recommended)* — smallest change, no new
-      dependency, and `MainTable` already takes props. Matches `CLAUDE.md`'s "State einmal
-      besitzen und per Props nach unten reichen".
+      dependency, and `MainTable` already takes props. Matches `CLAUDE.md`'s "own state once
+      and pass it down via props".
 - [ ] **B — React context provider** — no prop drilling, but adds a provider and makes every
       component test need a wrapper.
 - [ ] **C — TanStack Query** — caching, dedupe and retry for free; a new runtime dependency
