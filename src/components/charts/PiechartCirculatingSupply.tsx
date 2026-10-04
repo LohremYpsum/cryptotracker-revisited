@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { Card, CardBody, Text } from '@chakra-ui/react'
+import { Box, Card, CardBody, Text } from '@chakra-ui/react'
 import Chart from 'chart.js/auto';
 
 // utils
@@ -43,7 +43,7 @@ const PiechartCirculatingSupply = ({chartTitle, cryptos}: Props) => {
         ],
       },
       options: {
-        // Add any additional chart options here
+        maintainAspectRatio: false,
       },
     });
 
@@ -55,7 +55,9 @@ const PiechartCirculatingSupply = ({chartTitle, cryptos}: Props) => {
     <Card>
     <CardBody>
       <Text>{chartTitle}</Text>
-      <canvas ref={chartRef} width={50} height={50}></canvas>
+      <Box h={['220px', '260px', '300px']}>
+        <canvas ref={chartRef}></canvas>
+      </Box>
     </CardBody>
   </Card>
   )

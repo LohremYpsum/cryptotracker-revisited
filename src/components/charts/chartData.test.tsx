@@ -114,3 +114,24 @@ describe('chart data derived from props', () => {
     expect(chartConstructor).not.toHaveBeenCalled()
   })
 })
+
+describe('chart sizing', () => {
+  it('lets the container drive the size instead of the canvas attributes', () => {
+    renderWithChakra(<PiechartMarketCap cryptos={coins} chartTitle="Market cap" />)
+
+    // A 50x50 canvas with maintainAspectRatio on its default of true pins the
+    // chart to a square regardless of the box it sits in.
+    expect(lastConfig().options?.maintainAspectRatio).toBe(false)
+  })
+
+  it('renders a canvas with no hard-coded width or height', () => {
+    const { container } = renderWithChakra(
+      <PiechartMarketCap cryptos={coins} chartTitle="Market cap" />,
+    )
+
+    const canvas = container.querySelector('canvas')
+    expect(canvas).not.toBeNull()
+    expect(canvas).not.toHaveAttribute('width')
+    expect(canvas).not.toHaveAttribute('height')
+  })
+})
