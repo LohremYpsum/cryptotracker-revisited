@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { Box, Container, Stack } from '@chakra-ui/react'
 import NavBar from './components/commons/NavBar'
 import TableOverview from './components/TableOverview'
@@ -8,6 +9,7 @@ import BarchartAthChange from './components/charts/BarchartAthChange'
 import PiechartTradeVolume from './components/charts/PiechartTradeVolume'
 
 import useCoins from './hooks/useCoins'
+import { filterCoins } from './utils/filterCoins'
 
 
 function App() {
@@ -15,18 +17,29 @@ function App() {
   // Fetch Coins once for the whole page and pass them down.
   const {coinsData, error, isLoaded, currency, count, page, setCount, setPage, setCurrency} = useCoins();
 
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // The search narrows the table only; the charts keep showing the whole page.
+  const visibleCoins = useMemo(() => filterCoins(coinsData, searchTerm), [coinsData, searchTerm]);
+
   return (
     <Box>
-      <NavBar currency={currency} onCurrencyChange={setCurrency} />
+      <NavBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        currency={currency}
+        onCurrencyChange={setCurrency}
+      />
 
       <Container maxW={1200}>
        <TableOverview
-         coinsData={coinsData}
+         coinsData={visibleCoins}
          error={error}
          currency={currency}
          page={page}
          count={count}
          isLoaded={isLoaded}
+         loadedRows={coinsData.length}
          onPageChange={setPage}
          onCountChange={setCount}
        />

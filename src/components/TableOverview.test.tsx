@@ -7,6 +7,7 @@ const pager = {
   page: 1,
   count: 10,
   isLoaded: false,
+  loadedRows: 0,
   onPageChange: () => {},
   onCountChange: () => {},
 }

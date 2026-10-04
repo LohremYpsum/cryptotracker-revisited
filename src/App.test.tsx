@@ -121,3 +121,67 @@ describe('App pagination', () => {
     expect(get.mock.calls[1][0]).toContain('per_page=50')
   })
 })
+
+describe('App search', () => {
+  const page = [
+    coin({ id: 'bitcoin', name: 'Bitcoin', symbol: 'btc' }),
+    coin({ id: 'ethereum', name: 'Ethereum', symbol: 'eth' }),
+  ]
+
+  it('narrows the table to matching coins as the user types', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+
+    await user.type(screen.getByRole('textbox', { name: 'Search coin' }), 'eth')
+
+    await waitFor(() => expect(screen.queryByText('Bitcoin')).not.toBeInTheDocument())
+    expect(screen.getByText('Ethereum')).toBeInTheDocument()
+  })
+
+  it('fires no extra request while searching', async () => {
+    const user = userEvent.setup()
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+
+    await user.type(screen.getByRole('textbox', { name: 'Search coin' }), 'ethereum')
+
+    // Filtering is client-side on purpose: a request per keystroke would burn
+    // the ~10-30 requests per minute the free tier allows in seconds.
+    expect(get).toHaveBeenCalledTimes(1)
+  })
+
+  it('restores the full table when the search is cleared', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+
+    const search = screen.getByRole('textbox', { name: 'Search coin' })
+    await user.type(search, 'eth')
+    await waitFor(() => expect(screen.queryByText('Bitcoin')).not.toBeInTheDocument())
+
+    await user.clear(search)
+
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+  })
+
+  it('leaves the charts showing the whole page', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(axios, 'get').mockResolvedValue({ data: page })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+
+    await user.type(screen.getByRole('textbox', { name: 'Search coin' }), 'eth')
+    await waitFor(() => expect(screen.queryByText('Bitcoin')).not.toBeInTheDocument())
+
+    // The search narrows the table; the charts are an overview of the page.
+    expect(screen.getByText('Market Capitalisation (absolute)')).toBeInTheDocument()
+  })
+})

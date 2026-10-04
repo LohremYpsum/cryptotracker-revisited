@@ -10,6 +10,8 @@ interface TableOverviewProps {
     page: number;
     count: number;
     isLoaded: boolean;
+    /** Rows the API returned before filtering, so paging ignores the search. */
+    loadedRows: number;
     onPageChange: (page: number) => void;
     onCountChange: (count: number) => void;
 }
@@ -21,6 +23,7 @@ const TableOverview = ({
     page,
     count,
     isLoaded,
+    loadedRows,
     onPageChange,
     onCountChange,
 }: TableOverviewProps) => {
@@ -34,7 +37,7 @@ const TableOverview = ({
         <Pagination
             page={page}
             count={count}
-            loadedRows={coinsData.length}
+            loadedRows={loadedRows}
             isLoaded={isLoaded}
             onPageChange={onPageChange}
             onCountChange={onCountChange}
