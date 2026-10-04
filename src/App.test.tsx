@@ -89,3 +89,35 @@ describe('App currency switch', () => {
     await waitFor(() => expect(screen.getByText(/50000/)).toHaveTextContent('$'))
   })
 })
+
+describe('App pagination', () => {
+  it('requests the next page when Next is clicked', async () => {
+    const user = userEvent.setup()
+    const full = Array.from({ length: 10 }, (_, i) => coin({ id: `c${i}`, name: `Coin ${i}` }))
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: full })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Coin 0')).toBeInTheDocument())
+    expect(get.mock.calls[0][0]).toContain('&page=1')
+
+    await user.click(screen.getByRole('button', { name: 'Next' }))
+
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
+    expect(get.mock.calls[1][0]).toContain('&page=2')
+    await waitFor(() => expect(screen.getByText('Page 2')).toBeInTheDocument())
+  })
+
+  it('requests a larger page when the size changes', async () => {
+    const user = userEvent.setup()
+    const full = Array.from({ length: 10 }, (_, i) => coin({ id: `c${i}`, name: `Coin ${i}` }))
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: full })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Coin 0')).toBeInTheDocument())
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Coins per page' }), '50')
+
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
+    expect(get.mock.calls[1][0]).toContain('per_page=50')
+  })
+})
