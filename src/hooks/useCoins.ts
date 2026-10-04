@@ -37,9 +37,9 @@ const useCoins = () => {
     const initResults = 10;
     const initPage = 1;
     const initCurrency = 'eur';
-    const [count, setCount] = useState(initResults);
-    const [page, setPage] = useState(initPage);
-    const [currency, setCurrency] = useState(initCurrency); // eur is true
+    const [count] = useState(initResults);
+    const [page] = useState(initPage);
+    const [currency] = useState(initCurrency);
     
 
      // Call API Endpoint (Refactor to Hooks Folder)
