@@ -16,3 +16,6 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 export function currencySymbol(currency: string): string {
   return CURRENCY_SYMBOLS[currency.toLowerCase()] ?? currency.toUpperCase()
 }
+
+/** The currencies offered in the switch, in display order. */
+export const SUPPORTED_CURRENCIES = ['eur', 'usd', 'gbp', 'jpy'] as const

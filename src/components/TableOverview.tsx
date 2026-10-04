@@ -1,20 +1,47 @@
 import { TableContainer, Text } from '@chakra-ui/react'
 import MainTable from './MainTable';
+import Pagination from './Pagination';
 import type { FetchCoins } from '../hooks/useCoins';
 
 interface TableOverviewProps {
     coinsData: FetchCoins[];
     error: string | null;
     currency: string;
+    page: number;
+    count: number;
+    isLoaded: boolean;
+    /** Rows the API returned before filtering, so paging ignores the search. */
+    loadedRows: number;
+    onPageChange: (page: number) => void;
+    onCountChange: (count: number) => void;
 }
 
-const TableOverview = ({coinsData, error, currency}: TableOverviewProps) => {
+const TableOverview = ({
+    coinsData,
+    error,
+    currency,
+    page,
+    count,
+    isLoaded,
+    loadedRows,
+    onPageChange,
+    onCountChange,
+}: TableOverviewProps) => {
 
     return (
     <TableContainer>
         {error && <Text>{error}</Text>}
 
         <MainTable coinsData={coinsData} currency={currency} />
+
+        <Pagination
+            page={page}
+            count={count}
+            loadedRows={loadedRows}
+            isLoaded={isLoaded}
+            onPageChange={onPageChange}
+            onCountChange={onCountChange}
+        />
 
     </TableContainer>
   )
