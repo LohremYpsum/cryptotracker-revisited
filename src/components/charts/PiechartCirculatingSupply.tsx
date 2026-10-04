@@ -23,7 +23,7 @@ const PiechartCirculatingSupply = ({chartTitle, cryptos}: Props) => {
       if (chartRef.current) {
         const ctx = chartRef.current.getContext('2d');
         if (ctx) {
-          new Chart(ctx, {
+          return new Chart(ctx, {
             type: 'doughnut',
             data: {
               labels: currencySymbols,
@@ -43,6 +43,7 @@ const PiechartCirculatingSupply = ({chartTitle, cryptos}: Props) => {
       }
     };
 
+    let chart: ReturnType<typeof initializeChart>;
     try {
       if (Array.isArray(cryptos) && cryptos.length > 0) {
         cryptos.forEach((coin, index) => {
@@ -51,13 +52,14 @@ const PiechartCirculatingSupply = ({chartTitle, cryptos}: Props) => {
           if (index === 14) throw new Error();
         });
 
-        initializeChart();
+        chart = initializeChart();
       } else {
         throw new Error();
       }
     } catch (error: any) {
       console.error(error.message);
     }
+    return () => chart?.destroy();
   }, [cryptos]);
   
 
