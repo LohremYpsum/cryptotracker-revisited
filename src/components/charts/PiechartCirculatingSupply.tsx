@@ -1,67 +1,55 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Card, CardBody, Text } from '@chakra-ui/react'
 import Chart from 'chart.js/auto';
 
 // utils
-import { initialChartData } from '../../utils/chartData';
-import { FetchCoins } from '../../hooks/useCoins'
+import { colorArray, MAX_CHART_ENTRIES } from '../../utils/chartData';
+import type { FetchCoins } from '../../hooks/useCoins'
 
 
 interface Props {
   cryptos: FetchCoins[];
-  chartTitle: string; 
+  chartTitle: string;
 }
 
 const PiechartCirculatingSupply = ({chartTitle, cryptos}: Props) => {
 
   const chartRef = useRef<HTMLCanvasElement | null>(null);
 
-  const {currencySymbols, circSupArray, colorArray } = initialChartData;
+  const { labels, values } = useMemo(() => {
+    const visible = cryptos.slice(0, MAX_CHART_ENTRIES);
+    return {
+      labels: visible.map((coin) => coin.symbol.toUpperCase()),
+      values: visible.map((coin) => coin.circulating_supply),
+    };
+  }, [cryptos]);
 
   useEffect(() => {
-    const initializeChart = () => {
-      if (chartRef.current) {
-        const ctx = chartRef.current.getContext('2d');
-        if (ctx) {
-          return new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-              labels: currencySymbols,
-              datasets: [
-                {
-                  data: circSupArray,
-                  backgroundColor: colorArray,
-                  hoverBackgroundColor: colorArray,
-                },
-              ],
-            },
-            options: {
-              // Add any additional chart options here
-            },
-          });
-        }
-      }
-    };
+    if (values.length === 0) return;
 
-    let chart: ReturnType<typeof initializeChart>;
-    try {
-      if (Array.isArray(cryptos) && cryptos.length > 0) {
-        cryptos.forEach((coin, index) => {
-          currencySymbols.push(coin.symbol);
-          circSupArray.push(coin.circulating_supply);
-          if (index === 14) throw new Error();
-        });
+    const ctx = chartRef.current?.getContext('2d');
+    if (!ctx) return;
 
-        chart = initializeChart();
-      } else {
-        throw new Error();
-      }
-    } catch (error: any) {
-      console.error(error.message);
-    }
-    return () => chart?.destroy();
-  }, [cryptos]);
-  
+    const chart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values,
+            backgroundColor: colorArray,
+            hoverBackgroundColor: colorArray,
+          },
+        ],
+      },
+      options: {
+        // Add any additional chart options here
+      },
+    });
+
+    return () => chart.destroy();
+  }, [labels, values]);
+
 
   return (
     <Card>
