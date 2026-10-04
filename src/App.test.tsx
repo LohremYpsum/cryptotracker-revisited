@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import axios from 'axios'
 import { renderWithChakra } from './test/renderWithChakra'
 import { coin } from './test/coinFixture'
@@ -68,5 +69,23 @@ describe('App user-facing copy', () => {
 
     expect(screen.getByPlaceholderText('Search coin')).toBeInTheDocument()
     expect(screen.queryByPlaceholderText('Seach Coin')).not.toBeInTheDocument()
+  })
+})
+
+describe('App currency switch', () => {
+  it('refetches in the chosen currency and relabels the prices', async () => {
+    const user = userEvent.setup()
+    const get = vi.spyOn(axios, 'get').mockResolvedValue({ data: [coin({ current_price: 50000 })] })
+
+    renderWithChakra(<App />)
+    await waitFor(() => expect(screen.getByText('Bitcoin')).toBeInTheDocument())
+    expect(get.mock.calls[0][0]).toContain('vs_currency=eur')
+    expect(screen.getByText(/50000/)).toHaveTextContent('€')
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Display currency' }), 'usd')
+
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(2))
+    expect(get.mock.calls[1][0]).toContain('vs_currency=usd')
+    await waitFor(() => expect(screen.getByText(/50000/)).toHaveTextContent('$'))
   })
 })

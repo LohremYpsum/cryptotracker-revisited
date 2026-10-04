@@ -13,11 +13,11 @@ import useCoins from './hooks/useCoins'
 function App() {
   
   // Fetch Coins once for the whole page and pass them down.
-  const {coinsData, error, currency} = useCoins();
+  const {coinsData, error, currency, setCurrency} = useCoins();
 
   return (
     <Box>
-      <NavBar />
+      <NavBar currency={currency} onCurrencyChange={setCurrency} />
 
       <Container maxW={1200}>
        <TableOverview coinsData={coinsData} error={error} currency={currency} />
