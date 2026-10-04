@@ -1,4 +1,5 @@
-import { Table, TableCaption, Thead, Tr, Th, Tbody, Td, Image, Button, Link} from '@chakra-ui/react'
+import { Table, TableCaption, Thead, Tr, Th, Tbody, Td, Image, Button} from '@chakra-ui/react'
+import { Link as RouterLink } from 'react-router-dom';
 import type { FetchCoins } from '../hooks/useCoins';
 import { currencySymbol } from '../utils/currency';
 
@@ -40,7 +41,7 @@ const MainTable = ({coinsData, currency}: MainTableProps) => {
             {singleEntry.ath} {currencySymbol(currency)}
         </Td>
         <Td>
-          <Button as={Link} href={`https://www.coingecko.com/en/coins/${singleEntry.id}`} isExternal>
+          <Button as={RouterLink} to={`/coin/${singleEntry.id}`}>
             Details
           </Button>
         </Td>

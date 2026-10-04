@@ -49,15 +49,34 @@ describe('MainTable', () => {
     expect(screen.getAllByRole('row')).toHaveLength(1)
   })
 
-  it('links the details button to the coin page on CoinGecko', () => {
+  it('AK-E05-1.1 — links the details button to the in-app route of its own coin', () => {
+    renderWithChakra(
+      <MainTable
+        coinsData={[coin(), coin({ id: 'ethereum', name: 'Ethereum', symbol: 'eth' })]}
+        currency="eur"
+      />,
+    )
+
+    const [bitcoin, ethereum] = screen.getAllByRole('link', { name: 'Details' })
+    expect(bitcoin).toHaveAttribute('href', '/coin/bitcoin')
+    expect(ethereum).toHaveAttribute('href', '/coin/ethereum')
+  })
+
+  it('AK-E05-1.2 — keeps the details button inside the app instead of opening CoinGecko', () => {
     renderWithChakra(<MainTable coinsData={[coin({ id: 'bitcoin' })]} currency="eur" />)
 
+    // The button used to be the CoinGecko link itself, which threw the user out
+    // of the app. The external reference now lives on the detail page.
     const detailsLink = screen.getByRole('link', { name: 'Details' })
-    expect(detailsLink).toHaveAttribute('href', 'https://www.coingecko.com/en/coins/bitcoin')
-    expect(detailsLink).toHaveAttribute('target', '_blank')
-    expect(detailsLink).toHaveAttribute('rel', expect.stringContaining('noopener'))
+    expect(detailsLink).not.toHaveAttribute('target')
+    expect(detailsLink.getAttribute('href')).not.toContain('coingecko.com')
+  })
+
+  it('AK-E05-1.5 — renders the details link as its own anchor, not nested in a button', () => {
+    renderWithChakra(<MainTable coinsData={[coin({ id: 'bitcoin' })]} currency="eur" />)
+
     // A nested anchor inside a <button> swallows the click — the link must stand on its own.
-    expect(detailsLink.closest('button')).toBeNull()
+    expect(screen.getByRole('link', { name: 'Details' }).closest('button')).toBeNull()
   })
 })
 
