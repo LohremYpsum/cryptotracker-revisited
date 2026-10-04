@@ -20,7 +20,7 @@ const MainTable = ({coinsData, currency}: MainTableProps) => {
         <Th>Ticker Symbol</Th>
         <Th isNumeric>current Price</Th>
         <Th isNumeric>All-Time High</Th>
-        <Th>Optionen</Th>
+        <Th>Options</Th>
     </Tr>
     </Thead>
 
@@ -39,8 +39,8 @@ const MainTable = ({coinsData, currency}: MainTableProps) => {
             {singleEntry.ath} {currency ? '€' : '$'}
         </Td>
         <Td>
-          <Button>
-            <Link href={`toDo-coinDetails/${singleEntry.id}`} isExternal>Details</Link>
+          <Button as={Link} href={`https://www.coingecko.com/en/coins/${singleEntry.id}`} isExternal>
+            Details
           </Button>
         </Td>
         </Tr>

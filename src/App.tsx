@@ -12,15 +12,15 @@ import useCoins from './hooks/useCoins'
 
 function App() {
   
-  // Fetch Coins 
-  const {coinsData, error, isLoaded, currency} = useCoins();
+  // Fetch Coins once for the whole page and pass them down.
+  const {coinsData, error, currency} = useCoins();
 
   return (
     <Box>
       <NavBar />
 
       <Container maxW={1200}>
-       <TableOverview /> 
+       <TableOverview coinsData={coinsData} error={error} currency={currency} />
 
       <Stack direction={['column', 'row']} spacing='24px' paddingBottom={50}>
         <Box w='600px' paddingTop={25} >

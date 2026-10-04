@@ -48,4 +48,15 @@ describe('MainTable', () => {
     expect(within(headerRow).getByText('Currency Name')).toBeInTheDocument()
     expect(screen.getAllByRole('row')).toHaveLength(1)
   })
+
+  it('links the details button to the coin page on CoinGecko', () => {
+    renderWithChakra(<MainTable coinsData={[coin({ id: 'bitcoin' })]} currency="eur" />)
+
+    const detailsLink = screen.getByRole('link', { name: 'Details' })
+    expect(detailsLink).toHaveAttribute('href', 'https://www.coingecko.com/en/coins/bitcoin')
+    expect(detailsLink).toHaveAttribute('target', '_blank')
+    expect(detailsLink).toHaveAttribute('rel', expect.stringContaining('noopener'))
+    // A nested anchor inside a <button> swallows the click — the link must stand on its own.
+    expect(detailsLink.closest('button')).toBeNull()
+  })
 })
